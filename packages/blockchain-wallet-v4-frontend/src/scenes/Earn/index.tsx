@@ -3,7 +3,8 @@ import { FormattedMessage } from 'react-intl'
 import { useDispatch, useSelector } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import { Text } from 'blockchain-info-components'
+import { Link, Text } from 'blockchain-info-components'
+import { getData as getUserCountry } from 'components/Banner/selectors'
 import { actions } from 'data'
 import { RootState } from 'data/rootReducer'
 import { Analytics, EarnTabsType, ModalName } from 'data/types'
@@ -59,6 +60,9 @@ const Earn = () => {
     earnActions.setSearchValue({ value: e.target.value })
   }, 800)
 
+  const isUserFromUK = useSelector(getUserCountry)?.country === 'GB'
+  const isIpFromUK = useSelector(getUserCountry)?.ipCountry === 'GB'
+
   useEffect(() => {
     // this also calls rates
     earnActions.fetchEarnInstruments()
@@ -110,15 +114,34 @@ const Earn = () => {
     } = data
 
     return (
-      <Table
-        activeRewardsRates={activeRewardsRates}
-        earnEDDStatus={earnEDDStatus}
-        interestRates={interestRates}
-        interestRatesArray={interestRatesArray}
-        isGoldTier={isGoldTier}
-        stakingRates={stakingRates}
-        userData={userData}
-      />
+      <>
+        {(isUserFromUK || isIpFromUK) && (
+          <Text weight={500} size='14px' italic style={{ marginBottom: 16 }}>
+            Real-time data is obtained from multiple sources and may sometimes be delayed due to
+            system performance issues. Past performance is not a reliable indicator of future
+            results. APYs are based on past performance and are not guaranteed. Find out more about
+            various crypto assets and their risks{' '}
+            <Link
+              size='14px'
+              href='https://support.blockchain.com/hc/en-us/articles/10857163796380-Staking-and-Rewards-what-are-the-risks'
+              target='_blank'
+              style={{ textDecoration: 'underline' }}
+            >
+              here
+            </Link>
+            .
+          </Text>
+        )}
+        <Table
+          activeRewardsRates={activeRewardsRates}
+          earnEDDStatus={earnEDDStatus}
+          interestRates={interestRates}
+          interestRatesArray={interestRatesArray}
+          isGoldTier={isGoldTier}
+          stakingRates={stakingRates}
+          userData={userData}
+        />
+      </>
     )
   }
 

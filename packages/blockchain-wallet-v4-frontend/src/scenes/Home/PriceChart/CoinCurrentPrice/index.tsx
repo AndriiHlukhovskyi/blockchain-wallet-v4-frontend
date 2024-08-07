@@ -1,20 +1,22 @@
 import React from 'react'
-import { connect, ConnectedProps } from 'react-redux'
+import { useSelector } from 'react-redux'
 
-import { selectors } from 'data'
+import { getCoin } from 'data/components/priceChart/selectors'
+import { priceTicker } from 'data/components/selectors'
 
-import CoinTicker from './CoinTicker'
+import Loading from './template.loading'
+import Success from './template.success'
 
-const CoinCurrentPrice = ({ priceChart: { coin = 'BTC' } }: Props) => {
-  return <CoinTicker coin={coin} data-e2e={`coinTicker${coin}`} />
+const CoinCurrentPrice = () => {
+  const coin = useSelector(getCoin) ?? 'BTC'
+  const data = useSelector((state) => priceTicker.getData(state, coin))
+
+  return data.cata({
+    Failure: () => null,
+    Loading: () => <Loading />,
+    NotAsked: () => <Loading />,
+    Success: (value) => <Success fiat={value.fiat} coin={coin} />
+  })
 }
 
-const mapStateToProps = (state) => ({
-  priceChart: selectors.preferences.getPriceChart(state)
-})
-
-const connector = connect(mapStateToProps)
-
-type Props = ConnectedProps<typeof connector>
-
-export default connector(CoinCurrentPrice)
+export default CoinCurrentPrice

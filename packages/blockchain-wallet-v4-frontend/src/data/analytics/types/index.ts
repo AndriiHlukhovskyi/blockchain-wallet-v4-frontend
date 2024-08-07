@@ -1,133 +1,132 @@
+import { AccountRecoveryActions, AccountRecoveryEvents } from './accountRecovery'
+import { BuyActions, BuyEvents } from './buy'
+import { CoinViewActions, CoinViewEvents } from './coinView'
+import { CowboysPromoActions, CowboysPromoEvents } from './cowboysPromo'
 import {
-  Events as AccountRecoveryEvents,
-  TrackEventAction as AccountRecoveryTrackEventAction
-} from './accountRecovery'
-import { Events as BuyEvents, TrackEventAction as BuyTrackEventAction } from './buy'
-import {
-  Events as CoinViewEvents,
-  TrackEventAction as TransactionsTrackEventAction
-} from './coinView'
-import {
-  Events as CowboysPromoEvents,
-  TrackEventAction as CowboysPromoTrackEventAction
-} from './cowboysPromo'
-import {
-  AnalyticsProperties as DepositWithdrawalClientProperties,
-  Events as DepositWithdrawalClientEvents,
-  TrackEventAction as DepositWithdrawalClientEventAction
+  DepositWithdrawalClientEventActions,
+  DepositWithdrawalClientEvents,
+  DepositWithdrawalClientProperties
 } from './depositWithdrawalClient'
+import { DexActions, DexEvents } from './dexEvents'
+import { ClientErrorActions, ClientErrorEvents } from './errors'
+import { ExchangePromoActions, ExchangePromoEvents } from './exchangePromo'
 import {
-  Events as ClientErrorEvents,
-  TrackEventAction as ClientErrorTrackEventAction
-} from './errors'
-import {
-  Events as ExchangePromoEvents,
-  TrackEventAction as ExchangePromoTrackEventAction
-} from './exchangePromo'
-import {
-  AnalyticsProperties as InterestClientProperties,
-  Events as InterestClientEvents,
-  TrackEventAction as InterestClientTrackEventAction
+  InterestClientActions,
+  InterestClientEvents,
+  InterestClientProperties
 } from './interestClient'
-import { Events as LoginEvents, TrackEventAction as LoginTrackEventAction } from './login'
-import { Events as MiscEvents, TrackEventAction as MiscTrackEventAction } from './misc'
-import { Events as NftsEvents, TrackEventAction as NftsTrackEventAction } from './nfts'
+import { LoginActions, LoginEvents } from './login'
+import { MiscActions, MiscEvents } from './misc'
+import { NftsEvents, NftsTrackEventActions } from './nfts'
 import {
-  AnalyticsProperties as OnboardingAndVerificationAnalyticsProperties,
-  Events as OnboardingAndVerificationEvents,
-  TrackEventAction as OnboardingAndVerificationTrackEventAction
+  OnboardingAndVerificationActions,
+  OnboardingAndVerificationAnalyticsProperties,
+  OnboardingAndVerificationEvents
 } from './onboardingAndVerification'
-import { Events as SellEvents, TrackEventAction as SellTrackEventAction } from './sell'
+import { PlaidClientActions, PlaidClientEvents } from './plaid'
+import { RecommendedSweepActions, RecommendedSweepEvents } from './recommendedimportsweep'
+import { SellActions, SellEvents } from './sell'
+import { SendCryptoActions, SendCryptoEvents } from './sendCrypto'
+import { SofiActions, SofiEvents } from './sofi'
+import { SpinnerActions, SpinnerEvents } from './spinner'
+import { SwapActions, SwapEvents } from './swap'
+import { TaxCenterActions, TaxCenterEvents } from './taxCenter'
 import {
-  Events as SendCryptoEvents,
-  TrackEventAction as SendCryptoTrackEventAction
-} from './sendCrypto'
-import { Events as SwapEvents, TrackEventAction as SwapTrackEventAction } from './swap'
-import {
-  Events as TaxCenterEvents,
-  TrackEventAction as TaxCenterTrackEventAction
-} from './taxCenter'
-import {
-  AnalyticsProperties as ViewAndClickAnalyticsProperties,
-  Events as ViewAndClickEvents,
-  TrackEventAction as ViewAndClickTrackEventAction
+  ViewAndClickActions,
+  ViewAndClickAnalyticsProperties,
+  ViewAndClickEvents
 } from './viewAndClick'
-import {
-  Events as WalletEarnEvents,
-  TrackEventAction as WalletEarnTrackEventAction
-} from './walletEarnClientEvents'
+import { WalletEarnActions, WalletEarnEvents } from './walletEarnClientEvents'
 
 const TRACK_EVENT = 'trackEvent'
 
 type AnalyticsKey =
   | AccountRecoveryEvents
+  | BuyEvents
   | ClientErrorEvents
+  | CoinViewEvents
+  | CowboysPromoEvents
   | DepositWithdrawalClientEvents
+  | DexEvents
+  | ExchangePromoEvents
   | InterestClientEvents
   | LoginEvents
   | MiscEvents
   | NftsEvents
   | OnboardingAndVerificationEvents
-  | SendCryptoEvents
-  | TaxCenterEvents
-  | CoinViewEvents
-  | CowboysPromoEvents
-  | ViewAndClickEvents
-  | SwapEvents
-  | WalletEarnEvents
-  | BuyEvents
+  | PlaidClientEvents
+  | RecommendedSweepEvents
   | SellEvents
-  | ExchangePromoEvents
+  | SendCryptoEvents
+  | SofiEvents
+  | SpinnerEvents
+  | SwapEvents
+  | TaxCenterEvents
+  | ViewAndClickEvents
+  | WalletEarnEvents
 
 const Analytics = {
   ...AccountRecoveryEvents,
+  ...BuyEvents,
   ...ClientErrorEvents,
   ...CoinViewEvents,
   ...CowboysPromoEvents,
   ...DepositWithdrawalClientEvents,
+  ...DexEvents,
+  ...ExchangePromoEvents,
   ...InterestClientEvents,
   ...LoginEvents,
   ...MiscEvents,
   ...NftsEvents,
   ...OnboardingAndVerificationEvents,
+  ...PlaidClientEvents,
+  ...RecommendedSweepEvents,
+  ...SellEvents,
   ...SendCryptoEvents,
+  ...SofiEvents,
+  ...SpinnerEvents,
   ...SwapEvents,
   ...TaxCenterEvents,
   ...ViewAndClickEvents,
-  ...WalletEarnEvents,
-  ...BuyEvents,
-  ...SellEvents
+  ...WalletEarnEvents
 }
 
 // event properties
 type AnalyticsProperties =
+  | DepositWithdrawalClientProperties
+  | InterestClientProperties
   | OnboardingAndVerificationAnalyticsProperties
   | ViewAndClickAnalyticsProperties
-  | InterestClientProperties
-  | DepositWithdrawalClientProperties
 
 // event actions
 type TrackEventAction =
-  | AccountRecoveryTrackEventAction
-  | ClientErrorTrackEventAction
-  | DepositWithdrawalClientEventAction
-  | InterestClientTrackEventAction
-  | LoginTrackEventAction
-  | MiscTrackEventAction
-  | NftsTrackEventAction
-  | OnboardingAndVerificationTrackEventAction
-  | SendCryptoTrackEventAction
-  | SwapTrackEventAction
-  | TaxCenterTrackEventAction
-  | TransactionsTrackEventAction
-  | ViewAndClickTrackEventAction
-  | WalletEarnTrackEventAction
-  | CowboysPromoTrackEventAction
-  | BuyTrackEventAction
-  | SellTrackEventAction
-  | ExchangePromoTrackEventAction
+  | AccountRecoveryActions
+  | BuyActions
+  | ClientErrorActions
+  | CowboysPromoActions
+  | DepositWithdrawalClientEventActions
+  | DexActions
+  | ExchangePromoActions
+  | InterestClientActions
+  | LoginActions
+  | MiscActions
+  | NftsTrackEventActions
+  | OnboardingAndVerificationActions
+  | RecommendedSweepActions
+  | PlaidClientActions
+  | SellActions
+  | SendCryptoActions
+  | SofiActions
+  | SpinnerActions
+  | SwapActions
+  | TaxCenterActions
+  | CoinViewActions
+  | ViewAndClickActions
+  | WalletEarnActions
 
 type AnalyticsTraits = {
+  country?: string
+  country_state?: string
   email?: string
   nabuId: string
   tier?: number

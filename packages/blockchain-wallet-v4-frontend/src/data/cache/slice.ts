@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-const initialState = {
+import { CacheType } from './types'
+
+const initialState: CacheType = {
   announcements: {},
   channelChannelId: undefined,
   channelPhonePubkey: undefined,
@@ -14,7 +16,8 @@ const initialState = {
   lastLogoutTimestamp: undefined,
   lastUnusedAmounts: {},
   mobileConnected: undefined,
-  unifiedAccount: undefined
+  noActionRequiredSweep: undefined,
+  unifiedAccount: false
 }
 
 const cacheSlice = createSlice({
@@ -29,41 +32,44 @@ const cacheSlice = createSlice({
 
       state.announcements[id] = { ...state.announcements[id], collapsed }
     },
-    channelChannelIdCreated: (state, action) => {
+    channelChannelIdCreated: (state, action: PayloadAction<CacheType['channelChannelId']>) => {
       state.channelChannelId = action.payload
     },
-    channelPhoneConnected: (state, action) => {
+    channelPhoneConnected: (state, action: PayloadAction<CacheType['channelPhonePubkey']>) => {
       state.channelPhonePubkey = action.payload
     },
-    channelPrivKeyCreated: (state, action) => {
+    channelPrivKeyCreated: (state, action: PayloadAction<CacheType['channelPrivKey']>) => {
       state.channelPrivKey = action.payload
     },
     disconnectChannelPhone: (state) => {
       state.channelPhonePubkey = undefined
     },
-    emailStored: (state, action) => {
+    emailStored: (state, action: PayloadAction<CacheType['lastEmail']>) => {
       state.lastEmail = action.payload
     },
-    exchangeEmail: (state, action) => {
+    exchangeEmail: (state, action: PayloadAction<CacheType['exchangeEmail']>) => {
       state.exchangeEmail = action.payload
     },
-    exchangeWalletGuid: (state, action) => {
+    exchangeWalletGuid: (state, action: PayloadAction<CacheType['exchangeWalletGuid']>) => {
       state.exchangeWalletGuid = action.payload
     },
-    guidEntered: (state, action) => {
+    guidEntered: (state, action: PayloadAction<CacheType['lastGuid']>) => {
       state.lastGuid = action.payload
     },
-    guidStored: (state, action) => {
+    guidStored: (state, action: PayloadAction<CacheType['guidStored']>) => {
       state.guidStored = action.payload
     },
-    hasCloudBackup: (state, action) => {
+    hasCloudBackup: (state, action: PayloadAction<CacheType['hasCloudBackup']>) => {
       state.hasCloudBackup = action.payload
     },
-    lastLogoutTimestamp: (state, action) => {
+    lastLogoutTimestamp: (state, action: PayloadAction<CacheType['lastLogoutTimestamp']>) => {
       state.lastLogoutTimestamp = action.payload
     },
-    mobileConnectedStored: (state, action) => {
+    mobileConnectedStored: (state, action: PayloadAction<CacheType['mobileConnected']>) => {
       state.mobileConnected = action.payload
+    },
+    noActionRequiredSweep: (state, action: PayloadAction<CacheType['noActionRequiredSweep']>) => {
+      state.noActionRequiredSweep = action.payload
     },
     removeExchangeLogin: (state) => {
       state.exchangeEmail = undefined
@@ -74,6 +80,9 @@ const cacheSlice = createSlice({
       if (state.lastUnusedAmounts[action.payload.pair]) {
         delete state.lastUnusedAmounts[action.payload.pair]
       }
+    },
+    removeNoActionRequiredSweep: (state) => {
+      state.noActionRequiredSweep = undefined
     },
     removeStoredLogin: (state) => {
       state.exchangeEmail = undefined
@@ -96,7 +105,7 @@ const cacheSlice = createSlice({
     setLastUnusedAmount: (state, action: PayloadAction<{ amount: string; pair: string }>) => {
       state.lastUnusedAmounts[action.payload.pair] = action.payload.amount
     },
-    setUnifiedAccount: (state, action) => {
+    setUnifiedAccount: (state, action: PayloadAction<CacheType['unifiedAccount']>) => {
       state.unifiedAccount = action.payload
     }
   }

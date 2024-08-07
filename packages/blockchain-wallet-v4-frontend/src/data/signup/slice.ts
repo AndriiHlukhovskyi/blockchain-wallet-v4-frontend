@@ -18,6 +18,7 @@ import {
 const initialState: SignupStateType = {
   accountRecoveryMagicLinkData: {},
   accountRecoveryVerify: Remote.NotAsked,
+  bakktRedirectUSStates: [],
   firstLogin: false,
   isValidReferralCode: undefined,
   kycReset: undefined,
@@ -28,7 +29,8 @@ const initialState: SignupStateType = {
   registering: Remote.NotAsked,
   resetAccount: false,
   restoring: Remote.NotAsked,
-  signupCountry: undefined
+  signupCountry: undefined,
+  signupCountryState: undefined
 }
 
 const signupSlice = createSlice({
@@ -100,8 +102,10 @@ const signupSlice = createSlice({
       state.kycReset = action.payload
     },
     setProductSignupMetadata: (state, action: PayloadAction<ProductSignupMetadata>) => {
-      const { platform, product, referrerUsername, signupRedirect, tuneTid } = action.payload
+      const { isSofi, platform, product, referrerUsername, signupRedirect, tuneTid } =
+        action.payload
       state.productSignupMetadata = {
+        isSofi,
         platform: platform?.toUpperCase() as PlatformTypes,
         product: product?.toUpperCase() as ProductAuthOptions,
         referrerUsername,
@@ -120,6 +124,12 @@ const signupSlice = createSlice({
     },
     setSignupCountry: (state, action: PayloadAction<SignupStateType['signupCountry']>) => {
       state.signupCountry = action.payload
+    },
+    setSignupCountryState: (
+      state,
+      action: PayloadAction<SignupStateType['signupCountryState']>
+    ) => {
+      state.signupCountryState = action.payload
     },
     triggerRecoverEmail: (state, action) => {},
     triggerSmsVerificationRecovery: () => {},

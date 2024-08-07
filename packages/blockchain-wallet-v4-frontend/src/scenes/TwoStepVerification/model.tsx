@@ -34,7 +34,7 @@ export const placeholder = () => {
   return (
     <FormattedMessage
       id='scenes.recover.firststep.placeholder'
-      defaultMessage='Enter your secret private key recovery phrase'
+      defaultMessage='Enter your recovery phrase'
     />
   )
 }
@@ -122,7 +122,7 @@ export const ReverifyIdentityInfoBox = () => {
       <Text size='12px' weight={500} lineHeight='1.5' color='grey900'>
         <FormattedMessage
           id='scenes.recovery.reverify_warning'
-          defaultMessage='For your security, you may be to re-verify your identity before accessing your Wallet or Exchange funds.'
+          defaultMessage='For your security, you may need to re-verify your identity before accessing your Wallet or Exchange funds.'
         />
       </Text>
     </RectangleBackground>

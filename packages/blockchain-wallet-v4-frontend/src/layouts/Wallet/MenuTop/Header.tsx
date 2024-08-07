@@ -1,10 +1,9 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback } from 'react'
 import { FormattedMessage } from 'react-intl'
 
 import { Navbar } from 'components/Navbar'
-import { selectors } from 'data'
+import { PrimaryNavItem } from 'components/Navbar/Navbar'
 import { Analytics, ModalName } from 'data/types'
-import { useRemote } from 'hooks'
 
 import { Props } from '.'
 
@@ -13,13 +12,13 @@ type OwnProps = Props & {
 }
 
 const Header = (props: OwnProps) => {
-  const { data } = useRemote(selectors.modules.profile.getCurrentTier)
-  const isGoldVerified = useMemo(() => data === 2, [data])
   const {
     analyticsActions,
+    currentTier,
     featureFlags,
     history,
     invitations,
+    isDexEligible,
     isKycVerificationEnabled,
     isReferralAvailable,
     isReferralEnabled,
@@ -29,6 +28,9 @@ const Header = (props: OwnProps) => {
     settingsActions,
     walletDebitCardEnabled
   } = props
+
+  const isGoldVerified = currentTier === 2
+
   const refreshCallback = useCallback(() => {
     refreshActions.refreshClicked()
   }, [refreshActions])
@@ -87,7 +89,7 @@ const Header = (props: OwnProps) => {
     })
   }, [analyticsActions, history])
 
-  const primaryNavItems = [
+  const primaryNavItems: PrimaryNavItem[] = [
     {
       dest: '/home',
       e2e: 'homeLink',
@@ -101,7 +103,6 @@ const Header = (props: OwnProps) => {
     {
       dest: '/earn',
       e2e: 'earnLink',
-      isNew: true,
       text: <FormattedMessage id='copy.earn' defaultMessage='Earn' />
     }
   ]
@@ -122,7 +123,7 @@ const Header = (props: OwnProps) => {
     })
   }
 
-  if (featureFlags.dex) {
+  if (featureFlags.dex && isDexEligible) {
     primaryNavItems.push({
       dest: '/dex',
       e2e: 'dexLink',

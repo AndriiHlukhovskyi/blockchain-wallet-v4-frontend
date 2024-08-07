@@ -1,45 +1,40 @@
+import { TIER_TYPES } from 'blockchain-wallet-v4-frontend/src/modals/Settings/TradingLimits/model'
 import { lift } from 'ramda'
 
-import { BSPaymentTypes, ExtractSuccess, FiatType, InvitationsType } from '@core/types'
+import { BSPaymentMethodsType, BSPaymentTypes, InvitationsType, RemoteDataType } from '@core/types'
 import { selectors } from 'data'
+import { RootState } from 'data/rootReducer'
 
-const getData = (state) => {
-  const balancesR = selectors.components.buySell.getBSBalances(state)
-  const bankTransferAccountsR = selectors.components.brokerage.getBankTransferAccounts(state)
+type SuccessStateType = {
+  paymentMethods: BSPaymentMethodsType
+  userCountryCode: string
+  userTier: TIER_TYPES
+}
+
+const getData = (state: RootState): RemoteDataType<string, SuccessStateType> => {
   const paymentMethodsR = selectors.components.buySell.getBSPaymentMethods(state)
   // TODO: Remove this when Open Banking gets rolled out 100%
   const invitations: InvitationsType = selectors.core.settings.getInvitations(state).getOrElse({
     openBanking: false
   } as InvitationsType)
 
-  const plaidEnabledR = selectors.core.walletOptions.getAddPlaidPaymentProvider(state)
-  const userDataR = selectors.modules.profile.getUserData(state)
-  const walletCurrencyR = selectors.core.settings.getCurrency(state)
+  const userTier = selectors.modules.profile.getCurrentTier(state)
+  const userCountryCode = selectors.modules.profile.getUserCountryCode(state)
 
-  return lift(
-    (
-      balances: ExtractSuccess<typeof balancesR>,
-      bankTransferAccounts: ExtractSuccess<typeof bankTransferAccountsR>,
-      paymentMethods: ExtractSuccess<typeof paymentMethodsR>,
-      plaidEnabled: ExtractSuccess<typeof plaidEnabledR>,
-      userData: ExtractSuccess<typeof userDataR>,
-      walletCurrency: FiatType
-    ) => ({
-      balances,
-      bankTransferAccounts,
-      paymentMethods:
-        (!invitations.openBanking && {
+  const filterPaymentMethods = (methods) => {
+    return methods.filter((m) => m.type === BSPaymentTypes.BANK_ACCOUNT || m.currency === 'USD')
+  }
+
+  return lift((paymentMethods, userTier, userCountryCode) => ({
+    paymentMethods: invitations.openBanking
+      ? paymentMethods
+      : {
           ...paymentMethods,
-          methods: paymentMethods.methods.filter((m) => {
-            return m.type === BSPaymentTypes.BANK_ACCOUNT || m.currency === 'USD'
-          })
-        }) ||
-        paymentMethods,
-      plaidEnabled,
-      userData,
-      walletCurrency
-    })
-  )(balancesR, bankTransferAccountsR, paymentMethodsR, plaidEnabledR, userDataR, walletCurrencyR)
+          methods: filterPaymentMethods(paymentMethods.methods)
+        },
+    userCountryCode,
+    userTier
+  }))(paymentMethodsR, userTier, userCountryCode)
 }
 
 export default getData

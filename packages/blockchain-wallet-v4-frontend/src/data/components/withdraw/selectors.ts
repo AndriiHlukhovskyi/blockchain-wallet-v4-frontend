@@ -1,6 +1,6 @@
 import { lift } from 'ramda'
 
-import { ExtractSuccess } from '@core/types'
+import { ExtractSuccess, RemoteDataType, WithdrawalLockResponseType } from '@core/types'
 import { RootState } from 'data/rootReducer'
 
 // TODO - MOVE TO BE 1000 before release
@@ -9,6 +9,9 @@ export const MIN_AMOUNT = '5.00'
 export const getAmount = (state: RootState) => state.components.withdraw.amount
 
 export const getBeneficiary = (state: RootState) => state.components.withdraw.beneficiary
+
+export const getSelectedDefaultMethod = (state: RootState) =>
+  state.components.withdraw.selectedDefaultMethod
 
 export const getFiatCurrency = (state: RootState) => state.components.withdraw.fiatCurrency
 
@@ -46,7 +49,9 @@ export const getMinAmountForCurrency = (state: RootState, currency: string) => {
 
 export const getLocks = (state: RootState) => state.components.withdraw.withdrawLocks
 
-export const getWithdrawalLocks = (state: RootState) => {
+export const getWithdrawalLocks = (
+  state: RootState
+): RemoteDataType<string, WithdrawalLockResponseType> => {
   const locksR = getLocks(state)
 
   return lift((locksResponse: ExtractSuccess<typeof locksR>) => locksResponse)(locksR)

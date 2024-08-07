@@ -26,7 +26,6 @@ import { askSecondPasswordEnhancer } from 'services/sagas'
 
 export default ({ api, coreSagas, networks }) => {
   const logLocation = 'auth/sagas'
-  const SIGNUP_FORM = 'register'
   const { createExchangeUser, createUser, generateRetailToken, setSession } = profileSagas({
     api,
     coreSagas,
@@ -101,6 +100,7 @@ export default ({ api, coreSagas, networks }) => {
       yield put(actions.auth.loginLoading())
       yield put(actions.signup.setRegisterEmail(email))
       yield put(actions.signup.setSignupCountry(country))
+      yield put(actions.signup.setSignupCountryState(state))
       const captchaToken = yield call(generateCaptchaToken, CaptchaActionName.SIGNUP)
       if (isAccountReset && accountRecoveryV2) {
         yield call(coreSagas.wallet.createResetWalletSaga, {
@@ -168,7 +168,7 @@ export default ({ api, coreSagas, networks }) => {
       }
     } catch (e) {
       if (e.message !== REFERRAL_ERROR_MESSAGE) {
-        yield put(actions.signup.registerFailure(undefined))
+        yield put(actions.signup.registerFailure(e))
         yield put(actions.auth.loginFailure(e))
         yield put(actions.logs.logErrorMessage(logLocation, 'register', e))
         yield put(actions.alerts.displayError(C.REGISTER_ERROR))
@@ -374,19 +374,29 @@ export default ({ api, coreSagas, networks }) => {
   const initializeSignUp = function* () {
     yield put(actions.modules.profile.clearSession())
     yield put(actions.modules.profile.clearProfileState())
+    const response = yield call(api.getUserLocation2)
+    const { countryCode } = response
     const queryParams = new URLSearchParams(yield select(selectors.router.getSearch))
     const referrerUsername = queryParams.get('referrerUsername') as string
     const tuneTid = queryParams.get('tuneTid') as string
     const product = queryParams.get('product') as ProductAuthOptions
     const platform = queryParams.get('platform') as PlatformTypes
     const signupRedirect = queryParams.get('redirect') as SignupRedirectTypes
+    const pathname = yield select(selectors.router.getPathname)
+    const isSofi = pathname.includes('sofi')
     yield put(
       actions.signup.setProductSignupMetadata({
+        isSofi,
         platform,
         product,
         referrerUsername,
         signupRedirect,
         tuneTid
+      })
+    )
+    yield put(
+      actions.auth.setProductAuthMetadata({
+        ipCountry: countryCode
       })
     )
     yield put(

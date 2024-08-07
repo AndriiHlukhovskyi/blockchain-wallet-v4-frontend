@@ -3,7 +3,7 @@ import { FormattedMessage } from 'react-intl'
 import { connect, ConnectedProps } from 'react-redux'
 import { RouteComponentProps } from 'react-router'
 import { NavLink } from 'react-router-dom'
-import { isEmpty, path, toLower } from 'ramda'
+import { path, toLower } from 'ramda'
 import { bindActionCreators, compose, Dispatch } from 'redux'
 import { reduxForm } from 'redux-form'
 import styled from 'styled-components'
@@ -28,6 +28,7 @@ import { media } from 'services/styles'
 import CoinIntroduction from './CoinIntroduction'
 import CoinPerformance from './CoinPerformance'
 import RecurringBuys from './RecurringBuys'
+import { RiskInvestment } from './RiskInvestment'
 import { getData } from './selectors'
 import TransactionFilters from './TransactionFilters'
 import TransactionList from './TransactionList'
@@ -75,19 +76,9 @@ const ExplainerWrapper = styled.div`
 `
 const StatsContainer = styled.div`
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  width: 100%;
   height: 120px;
   max-height: 120px;
   margin: 24px 0;
-
-  & > :first-child {
-    width: 320px;
-    min-width: 320px;
-    z-index: 2;
-    margin-right: 30px;
-  }
 
   ${media.laptop`
     height: auto;
@@ -95,12 +86,7 @@ const StatsContainer = styled.div`
     flex-direction: column;
     margin: 12px 0;
 
-    & > :first-child {
-      width: auto;
-      margin-right: 0px;
-    }
-
-    & > :last-child {
+    & > :not(:first-child) {
       margin-top: 12px;
     }
   `}
@@ -167,17 +153,16 @@ class TransactionsContainer extends React.PureComponent<Props> {
       isSearchEntered,
       loadMoreTxs,
       pages,
+      showRiskInvestments,
       sourceType,
       stakingEligible
     } = this.props
     const { coin } = computedMatch.params
     const { coinfig } = window.coins[coin]
-    const interestEligibleCoin =
-      !isEmpty(interestEligible) && interestEligible[coin] && interestEligible[coin]?.eligible
-    const stakingEligibleCoin =
-      !isEmpty(stakingEligible) && stakingEligible[coin] && stakingEligible[coin]?.eligible
+    const interestEligibleCoin = interestEligible?.[coin]?.eligible
+    const stakingEligibleCoin = stakingEligible?.[coin]?.eligible
     const isEarnButtonEnabled = isGoldTier && (interestEligibleCoin || stakingEligibleCoin)
-    const isEarnSourceType = sourceType && (sourceType === 'INTEREST' || sourceType === 'STAKING')
+    const isEarnSourceType = sourceType === 'INTEREST' || sourceType === 'STAKING'
 
     return (
       <SceneWrapper>
@@ -263,42 +248,36 @@ class TransactionsContainer extends React.PureComponent<Props> {
                 )}
                 {coinfig.type.name === 'FIAT' && (
                   <>
-                    {window.coins[coin].coinfig.type.name === 'FIAT' && (
-                      <Button
-                        nature='primary'
-                        data-e2e='depositFiat'
-                        style={{ minWidth: 'auto' }}
-                        onClick={() => {
-                          if (!this.props.brokerageActions) return
-                          if (!this.props.buySellActions) return
-                          if (isInvited || coin === 'USD') {
-                            this.props.brokerageActions.handleDepositFiatClick(
-                              coin as WalletFiatType
-                            )
-                          } else {
-                            this.props.buySellActions.handleDepositFiatClick({
-                              coin: coin as WalletFiatType,
-                              origin: 'TransactionList'
-                            })
-                          }
-                        }}
-                      >
-                        <FormattedMessage id='buttons.deposit' defaultMessage='Deposit' />
-                      </Button>
-                    )}
-                    {window.coins[coin].coinfig.type.name === 'FIAT' && (
-                      <Button
-                        nature='primary'
-                        data-e2e='withdrawFiat'
-                        style={{ marginLeft: '8px', minWidth: 'auto' }}
-                        onClick={() => {
-                          if (!this.props.brokerageActions) return
-                          this.props.brokerageActions.handleWithdrawClick(coin as WalletFiatType)
-                        }}
-                      >
-                        <FormattedMessage id='buttons.withdraw' defaultMessage='Withdraw' />
-                      </Button>
-                    )}
+                    <Button
+                      nature='primary'
+                      data-e2e='depositFiat'
+                      style={{ minWidth: 'auto' }}
+                      onClick={() => {
+                        if (!this.props.brokerageActions) return
+                        if (!this.props.buySellActions) return
+                        if (isInvited || coin === 'USD') {
+                          this.props.brokerageActions.handleDepositFiatClick(coin as WalletFiatType)
+                        } else {
+                          this.props.buySellActions.handleDepositFiatClick({
+                            coin: coin as WalletFiatType,
+                            origin: 'TransactionList'
+                          })
+                        }
+                      }}
+                    >
+                      <FormattedMessage id='buttons.deposit' defaultMessage='Deposit' />
+                    </Button>
+                    <Button
+                      nature='primary'
+                      data-e2e='withdrawFiat'
+                      style={{ marginLeft: '8px', minWidth: 'auto' }}
+                      onClick={() => {
+                        if (!this.props.brokerageActions) return
+                        this.props.brokerageActions.handleWithdrawClick(coin as WalletFiatType)
+                      }}
+                    >
+                      <FormattedMessage id='buttons.withdraw' defaultMessage='Withdraw' />
+                    </Button>
                   </>
                 )}
               </TitleActionContainer>
@@ -342,6 +321,7 @@ class TransactionsContainer extends React.PureComponent<Props> {
                 sourceType={sourceType}
               />
             ))}
+          {showRiskInvestments && <RiskInvestment coin={coin} />}
         </LazyLoadContainer>
       </SceneWrapper>
     )
@@ -359,9 +339,10 @@ const mapDispatchToProps = (dispatch: Dispatch, ownProps: OwnProps) => {
     buySellActions: bindActionCreators(actions.components.buySell, dispatch),
     interestActions: bindActionCreators(actions.components.interest, dispatch),
     miscActions: bindActionCreators(actions.core.data.misc, dispatch),
-    recurringBuyActions: bindActionCreators(actions.components.recurringBuy, dispatch),
-    withdrawActions: bindActionCreators(actions.components.withdraw, dispatch)
+    recurringBuyActions: bindActionCreators(actions.components.recurringBuy, dispatch)
   }
+  const isCustodialCoin = selectors.core.data.coins.getCustodialCoins().includes(coin)
+
   if (selectors.core.data.coins.getErc20Coins().includes(coin)) {
     return {
       ...baseActions,
@@ -370,10 +351,7 @@ const mapDispatchToProps = (dispatch: Dispatch, ownProps: OwnProps) => {
       loadMoreTxs: () => dispatch(actions.components.ethTransactions.loadMoreErc20(coin))
     }
   }
-  if (
-    selectors.core.data.coins.getCustodialCoins().includes(coin) ||
-    selectors.core.data.coins.getDynamicSelfCustodyCoins().includes(coin)
-  ) {
+  if (isCustodialCoin || selectors.core.data.coins.getDynamicSelfCustodyCoins().includes(coin)) {
     return {
       ...baseActions,
       fetchData: () => {},

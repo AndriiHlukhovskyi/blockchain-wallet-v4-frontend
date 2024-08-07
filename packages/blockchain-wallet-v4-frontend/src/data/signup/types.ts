@@ -8,6 +8,7 @@ export enum SignupRedirectTypes {
 }
 
 export type ProductSignupMetadata = {
+  isSofi?: boolean
   platform?: PlatformTypes
   product?: ProductAuthOptions
   referrerUsername?: string
@@ -70,9 +71,9 @@ export enum AccountRecoveryApprovalStatusType {
 
 export type MetadataRestoreType = any
 
-export type RegisteringFailureType = undefined
+export type RegisteringFailureType = { error: string }
 
-export type RegisteringSuccessType = undefined
+export type RegisteringSuccessType = any
 
 export type RestoringType = undefined
 
@@ -85,6 +86,7 @@ export type SignupStateType = {
   accountRecoveryMagicLinkData: AccountRecoveryMagicLinkData
   accountRecoveryMagicLinkDataEncoded?: string
   accountRecoveryVerify: RemoteDataType<string, any>
+  bakktRedirectUSStates: [] | [string]
   firstLogin: boolean
   isValidReferralCode?: boolean
   kycReset?: boolean
@@ -96,4 +98,5 @@ export type SignupStateType = {
   resetAccount: boolean
   restoring: RemoteDataType<string, RestoringType>
   signupCountry?: string
+  signupCountryState?: string
 }

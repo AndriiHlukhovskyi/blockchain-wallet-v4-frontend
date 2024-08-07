@@ -11,8 +11,8 @@ import { RootState } from 'data/rootReducer'
 import { RecurringBuyOrigins } from 'data/types'
 import { media } from 'services/styles'
 
-import { getRecurringBuyAnnouncement } from '../selectors'
-import { BannerButton, CloseLink } from '../styles'
+import ANNOUNCEMENTS from '../constants'
+import { BannerButton, CloseLink, Column, Copy, Row, SyncIconWrapper } from '../styles'
 
 const Wrapper = styled.div`
   display: flex;
@@ -36,48 +36,12 @@ const Wrapper = styled.div`
     flex-direction: column;
   `}
 `
-const Row = styled.div`
-  display: flex;
-  align-items: center;
-  flex: 1;
-`
-const Column = styled.div`
-  display: flex;
-  flex-direction: column;
-
-  & > div:first-child {
-    margin-bottom: 4px;
-  }
-`
-const SyncIconWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  width: 40px;
-  min-width: 40px;
-  border-radius: 20px;
-  margin-right: 20px;
-  background-color: ${(props) => props.theme.blue100};
-`
-const Copy = styled(Text)`
-  display: flex;
-  align-items: center;
-  ${media.mobile`
-    font-size: 12px;
-  `}
-  ${media.tablet`
-    font-size: 14px;
-  `}
-`
 
 const RecurringBuys = (props: Props) => {
   const showModal = () => {
     props.recurringBuyActions.showModal({ origin: RecurringBuyOrigins.RECURRING_BUYS_BANNER })
     props.recurringBuyActions.learnMoreLinkClicked(RecurringBuyOrigins.DASHBOARD_PROMO)
   }
-
-  const completeAnnouncement = getRecurringBuyAnnouncement()
 
   return (
     <Wrapper>
@@ -110,7 +74,7 @@ const RecurringBuys = (props: Props) => {
       </BannerButton>
       <CloseLink
         data-e2e='newCoinCloseButton'
-        onClick={() => props.cacheActions.announcementDismissed(completeAnnouncement)}
+        onClick={() => props.cacheActions.announcementDismissed(ANNOUNCEMENTS.RECURRING_BUY)}
       >
         <Icon size='20px' color='grey400' name='close-circle' />
       </CloseLink>

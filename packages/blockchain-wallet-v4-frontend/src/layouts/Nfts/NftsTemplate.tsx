@@ -2,7 +2,8 @@ import React from 'react'
 import styled from 'styled-components'
 
 import Alerts from 'components/Alerts'
-import Announcements from 'components/Announcements'
+import { ServiceAnnouncement, StaticAnnouncement } from 'components/Announcements'
+import { UkBanner } from 'components/Banner'
 import Tooltips from 'components/Tooltips'
 import ErrorBoundary from 'providers/ErrorBoundaryProvider'
 
@@ -27,8 +28,9 @@ const NftsTemplate: React.FC<any> = (props) => {
         <Alerts />
         <Nav>
           <MenuTop />
-          <Announcements type='service' alertArea='wallet' />
-          <Announcements type='static' />
+          <UkBanner />
+          <ServiceAnnouncement alertArea='wallet' />
+          <StaticAnnouncement />
         </Nav>
         <Tooltips />
         <Modals />

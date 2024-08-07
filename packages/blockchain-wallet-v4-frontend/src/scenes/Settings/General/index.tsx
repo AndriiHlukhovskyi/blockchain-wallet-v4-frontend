@@ -1,11 +1,11 @@
 import React from 'react'
 import { FormattedMessage } from 'react-intl'
-import { connect, ConnectedProps } from 'react-redux'
+import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 
+import { getPairingCodeFlag } from '@core/redux/walletOptions/selectors'
 import { Text } from 'blockchain-info-components'
 import MenuHeader from 'components/MenuHeader'
-import { selectors } from 'data'
 
 import About from './About'
 import LinkedBanks from './LinkedBanks'
@@ -21,7 +21,12 @@ const Title = styled(Text)`
   margin: 4px 0;
 `
 
-const General = (props: Props) => {
+const General = () => {
+  const showPairingCode = useSelector(
+    getPairingCodeFlag,
+    (prev, next) => prev.data === next.data
+  ).getOrElse(false)
+
   return (
     <section>
       <MenuHeader>
@@ -41,7 +46,7 @@ const General = (props: Props) => {
       <WalletId />
       {/* We are hiding the pairing code on production as
       for wallet security */}
-      {props.showPairingCode && <PairingCode />}
+      {showPairingCode && <PairingCode />}
       <LinkedBanks />
       <LinkedWireBanks />
       <LinkedCards />
@@ -53,12 +58,4 @@ const General = (props: Props) => {
   )
 }
 
-const mapStateToProps = (state) => ({
-  showPairingCode: selectors.core.walletOptions.getPairingCodeFlag(state).getOrElse(false)
-})
-
-const connector = connect(mapStateToProps)
-
-type Props = ConnectedProps<typeof connector>
-
-export default connector(General)
+export default General

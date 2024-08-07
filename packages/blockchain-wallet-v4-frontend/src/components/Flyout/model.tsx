@@ -858,7 +858,7 @@ const Bank = ({ bankDetails, icon, isActive, isDisabled = false, onClick, text }
     data-e2e={`sb${bankDetails?.bankAccountType?.toLowerCase()}Banks`}
     role='button'
     onClick={!isDisabled ? onClick : undefined}
-    isDisabled
+    isDisabled={isDisabled}
   >
     <DisplayIcon>{icon}</DisplayIcon>
     <MultiRowContainer>
@@ -902,7 +902,7 @@ const BankWire = ({
     <Col style={{ width: '100%' }}>
       <Content>
         <Value asTitle>{beneficiary.name}</Value>
-        <Title asValue>{beneficiary.agent.account}</Title>
+        <Title asValue>Wire Account ending in {beneficiary.address.slice(-4)}</Title>
 
         {type === 'DEPOSIT' && (
           <CartridgeContainer>
@@ -965,21 +965,28 @@ type WithdrawalBrokerageLimits = {
   withdrawableBalance?: string
 }
 const getBrokerageLimits = (props: DepositBrokerageLimits | WithdrawalBrokerageLimits) => {
-  return props.orderType === BrokerageOrderType.DEPOSIT
-    ? props.paymentMethod.limits
-    : props.orderType === BrokerageOrderType.WITHDRAW &&
-      props.withdrawableBalance &&
-      props.minWithdrawAmount
-    ? {
-        max: (Number(props.withdrawableBalance) - Number(props.fee || '0')).toString(),
-        min: props.minWithdrawAmount
-      }
-    : { max: '0', min: '0' }
+  if (props.orderType === BrokerageOrderType.DEPOSIT) {
+    return props.paymentMethod.limits
+  }
+
+  if (
+    props.orderType === BrokerageOrderType.WITHDRAW &&
+    props.withdrawableBalance &&
+    props.minWithdrawAmount
+  ) {
+    const totalWithdrawable = Number(props.withdrawableBalance) - Number(props.fee ?? 0)
+
+    return {
+      max: Math.max(totalWithdrawable, 0).toString(),
+      min: props.minWithdrawAmount
+    }
+  }
+
+  return { max: '0', min: '0' }
 }
 
 const normalizeAmount = (value, prevValue) => {
-  // eslint-disable-next-line no-restricted-globals
-  if (isNaN(Number(value)) && value !== '.' && value !== '') return prevValue
+  if (Number.isNaN(Number(value)) && value !== '.' && value !== '') return prevValue
   return formatTextAmount(value, true)
 }
 

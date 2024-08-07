@@ -4,7 +4,7 @@ import { startSubmit, stopSubmit } from 'redux-form'
 import { all, call, fork, put, select, take } from 'redux-saga/effects'
 
 import { coreSelectors } from '@core'
-import { CountryScope, WalletOptionsType } from '@core/types'
+import { CountryScope, RemoteDataType, WalletOptionsType } from '@core/types'
 import { actions, actionTypes, selectors } from 'data'
 import { ClientErrorProperties } from 'data/analytics/types/errors'
 import { fetchBalances } from 'data/balances/sagas'
@@ -43,9 +43,11 @@ import {
   ProductAuthOptions
 } from './types'
 
+const LOGIN_FORM = 'login'
+
 export default ({ api, coreSagas, networks }) => {
   const logLocation = 'auth/sagas'
-  const { createExchangeUser, createUser } = profileSagas({
+  const { createExchangeUser, createUser, waitForUserData } = profileSagas({
     api,
     coreSagas,
     networks
@@ -60,8 +62,6 @@ export default ({ api, coreSagas, networks }) => {
   })
   const { saveGoals } = goalSagas({ api, coreSagas, networks })
   const { generateCaptchaToken, startCoinWebsockets } = miscSagas()
-
-  const LOGIN_FORM = 'login'
 
   const authNabu = function* (firstLogin?: boolean) {
     yield put(
@@ -294,23 +294,22 @@ export default ({ api, coreSagas, networks }) => {
     state = undefined
   }: LoginRoutinePayloadType) {
     try {
-      const product = yield select(selectors.auth.getProduct)
       // If needed, the user should upgrade its wallet before being able to open the wallet
       const isHdWallet = yield select(selectors.core.wallet.isHdWallet)
+
+      const { isSofi: isSofiSignup } = yield select(selectors.signup.getProductSignupMetadata)
+      const isSofiAuth = yield select(S.getIsSofi)
+      const isSofi = isSofiSignup || isSofiAuth
       if (!isHdWallet) {
         yield put(actions.wallet.upgradeWallet(3))
         yield take(actionTypes.core.walletSync.SYNC_SUCCESS)
       }
-      const createExchangeUserFlag = (yield select(
-        selectors.core.walletOptions.getCreateExchangeUserOnSignupOrLogin
-      )).getOrElse(false)
-      const isLatestVersion = yield select(selectors.core.wallet.isWrapperLatestVersion)
       yield call(coreSagas.settings.fetchSettings)
+      const isLatestVersion = yield select(selectors.core.wallet.isWrapperLatestVersion)
       if (!isLatestVersion) {
         yield put(actions.wallet.upgradeWallet(4))
         yield take(actionTypes.core.walletSync.SYNC_SUCCESS)
       }
-      const isAccountReset: boolean = yield select(selectors.signup.getAccountReset)
       // Finish upgrades
       yield put(actions.auth.authenticate())
       yield put(actions.signup.setFirstLogin(firstLogin))
@@ -329,18 +328,49 @@ export default ({ api, coreSagas, networks }) => {
       yield call(coreSagas.data.xlm.fetchData)
 
       yield call(authNabu, firstLogin)
+      const product = yield select(selectors.auth.getProduct)
       if (product === ProductAuthOptions.EXCHANGE && (recovery || !firstLogin)) {
         return yield put(
           actions.modules.profile.authAndRouteToExchangeAction(ExchangeAuthOriginType.Login)
         )
       }
+      // check if dex is eligible
+      yield call(waitForUserData)
+      yield put(actions.components.dex.fetchUserEligibility())
+      yield put(actions.custodial.fetchProductEligibilityForUser())
+
+      yield put(identityVerificationActions.fetchVerificationSteps())
+
+      yield take([
+        actions.custodial.fetchProductEligibilityForUserSuccess.type,
+        actions.custodial.fetchProductEligibilityForUserFailure.type
+      ])
+
+      // As this is a remote loaded thing, it returns a { data } object
+      const { data: userEligibility }: RemoteDataType<string, ProductEligibilityForUser> =
+        yield select(selectors.custodial.getProductEligibilityForUser)
+
+      // Bakkt related flag - if enabled, user needs to continue on phone
+      if (userEligibility?.useExternalTradingAccount?.enabled && !isSofi) {
+        return yield put(actions.router.push('/continue-on-phone'))
+      }
+      if (!isSofi) {
+        yield put(actions.modules.profile.fetchSofiUserStatus())
+      }
+
       const guid = yield select(selectors.core.wallet.getGuid)
+      const isAccountReset: boolean = yield select(selectors.signup.getAccountReset)
       if (firstLogin && !isAccountReset && !recovery) {
         // create nabu user
         yield call(createUser)
         yield call(api.setUserInitialAddress, country, state)
         yield call(coreSagas.settings.fetchSettings)
       }
+
+      const createExchangeUserFlag = (yield select(
+        selectors.core.walletOptions.getCreateExchangeUserOnSignupOrLogin
+      )).getOrElse(false)
+
       if (!isAccountReset && !recovery && createExchangeUserFlag) {
         if (firstLogin) {
           yield call(createExchangeUser, country)
@@ -383,12 +413,6 @@ export default ({ api, coreSagas, networks }) => {
           if (!verifiedTwoFa) {
             yield put(actions.router.push('/setup-two-factor'))
           } else {
-            yield put(actions.custodial.fetchProductEligibilityForUser())
-            yield take([
-              actions.custodial.fetchProductEligibilityForUserSuccess.type,
-              actions.custodial.fetchProductEligibilityForUserFailure.type
-            ])
-
             const products = selectors.custodial
               .getProductEligibilityForUser(yield select())
               .getOrElse({
@@ -400,11 +424,17 @@ export default ({ api, coreSagas, networks }) => {
             }
           }
         } else {
+          if (isSofi) {
+            yield put(actions.modules.profile.associateSofiUserSignup())
+          }
           yield put(actions.router.push('/verify-email-step'))
         }
+      } else if (isSofi && !firstLogin) {
+        yield put(actions.modules.profile.associateSofiUserLogin())
       } else {
         yield put(actions.router.push('/home'))
       }
+
       yield call(fetchBalances)
       yield call(saveGoals, firstLogin)
       // We run goals in accountResetSaga in this case
@@ -415,11 +445,13 @@ export default ({ api, coreSagas, networks }) => {
       yield call(upgradeAddressLabelsSaga)
       yield put(actions.auth.startLogoutTimer())
       yield call(startCoinWebsockets)
-
       // store guid and email in cache for future login
       yield put(actions.cache.guidEntered(guid))
       if (email) {
         yield put(actions.cache.emailStored(email))
+        localStorage.setItem('loginIdentifier', email)
+      } else {
+        localStorage.setItem('loginIdentifier', guid)
       }
       // reset auth type and clear previous login form state
       yield put(actions.auth.setAuthType(0))
@@ -759,7 +791,9 @@ export default ({ api, coreSagas, networks }) => {
     try {
       // open coin ws needed for coin streams and channel key for mobile login
       yield put(actions.ws.startSocket())
-
+      // get ip country address for finproms
+      const response = yield call(api.getUserLocation2)
+      const { countryCode: ipCountry } = response
       // get product auth data from querystring
       const queryParams = new URLSearchParams(yield select(selectors.router.getSearch))
       // get guid when wallet is launched from a logged in exchange account
@@ -775,18 +809,22 @@ export default ({ api, coreSagas, networks }) => {
       const redirect = queryParams.get('redirect') as string
       // keeps session id consistent if logging in from mobile exchange app
       const sessionIdMobile = queryParams.get('sessionId') as string
+      const pathname = yield select(selectors.router.getPathname)
+      const isSofi = pathname.includes('sofi')
+      const urlPathParams = pathname.split('/')
       // store product auth data defaulting to product=wallet and platform=web
       yield put(
         actions.auth.setProductAuthMetadata({
+          ipCountry,
           platform,
           product,
           redirect,
           userType
         })
       )
+      yield put(actions.auth.setIsSofi(isSofi))
       // select required data to initialize auth below
-      const pathname = yield select(selectors.router.getPathname)
-      const urlPathParams = pathname.split('/')
+
       const walletGuidOrMagicLinkFromUrl = urlPathParams[2]
       const isUnified = yield select(selectors.cache.getUnifiedAccountStatus)
       const storedGuid = yield select(selectors.cache.getStoredGuid)
@@ -799,6 +837,10 @@ export default ({ api, coreSagas, networks }) => {
       // initialize login form and/or set initial auth step
       // 👋 Case order matters, think before changing!
       switch (true) {
+        // sofi login flow
+        case isSofi:
+          yield put(actions.form.change(LOGIN_FORM, 'step', LoginSteps.SOFI_EMAIL))
+          break
         // wallet mobile webview auth flow
         case platform !== PlatformTypes.WEB && product === ProductAuthOptions.WALLET:
           yield call(initMobileWalletAuthFlow)
@@ -812,6 +854,7 @@ export default ({ api, coreSagas, networks }) => {
         case guidFromQueryParams !== null && emailFromQueryParams !== null:
           yield put(actions.router.push(DEFAULT_WALLET_LOGIN))
           yield put(actions.cache.emailStored(emailFromQueryParams))
+          localStorage.setItem('loginIdentifier', emailFromQueryParams)
           yield put(actions.cache.guidStored(guidFromQueryParams))
           yield put(actions.form.change(LOGIN_FORM, 'guid', guidFromQueryParams))
           yield put(actions.form.change(LOGIN_FORM, 'email', emailFromQueryParams))
@@ -898,6 +941,7 @@ export default ({ api, coreSagas, networks }) => {
       guid,
       guidOrEmail,
       password,
+      sofiLoginEmail,
       step
     } = yield select(selectors.form.getFormValues(LOGIN_FORM))
     const unificationFlowType = yield select(S.getAccountUnificationFlowType)
@@ -911,7 +955,11 @@ export default ({ api, coreSagas, networks }) => {
         auth = auth.toUpperCase()
       }
       // CHECKS FORM STEP TO SEE IF WE WANT TO TRIGGER THE VERIFICATION LINK
-      if (step === LoginSteps.ENTER_EMAIL_GUID || step === LoginSteps.CHECK_EMAIL) {
+      if (
+        step === LoginSteps.ENTER_EMAIL_GUID ||
+        step === LoginSteps.CHECK_EMAIL ||
+        step === LoginSteps.SOFI_EMAIL
+      ) {
         // If it's a guid, we take them to the enter mobile verification step
         if (isGuid(guidOrEmail) && product === ProductAuthOptions.WALLET) {
           yield put(actions.form.change(LOGIN_FORM, 'guid', guidOrEmail))
@@ -923,7 +971,9 @@ export default ({ api, coreSagas, networks }) => {
         } else {
           // trigger email from wallet form
           yield put(actions.form.change(LOGIN_FORM, 'email', email || guidOrEmail))
-          yield put(actions.auth.triggerWalletMagicLink({ email: email || guidOrEmail }))
+          yield put(
+            actions.auth.triggerWalletMagicLink({ email: email || guidOrEmail || sofiLoginEmail })
+          )
         }
         yield put(
           actions.analytics.trackEvent({

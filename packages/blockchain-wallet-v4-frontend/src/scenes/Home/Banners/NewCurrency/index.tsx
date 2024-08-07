@@ -9,28 +9,14 @@ import { Button, Icon, Text } from 'blockchain-info-components'
 import { actions, selectors } from 'data'
 import { media } from 'services/styles'
 
-import { getNewCoinAnnouncement } from '../selectors'
+import ANNOUNCEMENTS from '../constants'
+import { Wrapper } from '../styles'
 
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  box-sizing: border-box;
-  border: 1px solid ${(props) => props.theme.grey000};
-  border-radius: 8px;
-  overflow: hidden;
-  padding: 20px;
-
-  ${media.atLeastLaptop`
-    height: 80px;
-    padding: 0 20px;
-  `}
-`
-const NewCoinWrapper = styled.div`
+const CenterWrapper = styled.div`
   display: flex;
   align-items: center;
 `
+
 const VerbText = styled(Text)`
   margin-right: 5px;
   font-weight: 600;
@@ -50,11 +36,6 @@ const Description = styled(Text)`
   `}
 `
 
-const CTAWrapper = styled.div`
-  display: flex;
-  align-items: center;
-`
-
 const CTAButton = styled(Button)`
   margin-right: 12px;
 
@@ -64,6 +45,7 @@ const CTAButton = styled(Button)`
     font-size: 14px;
   }
 `
+
 const CloseLink = styled.div`
   cursor: pointer;
 `
@@ -72,13 +54,13 @@ const NewCurrency = ({ buySellActions, cacheActions, coinListing }: Props) => {
   if (!coinListing) return null
   if (!window.coins[coinListing]) return null
 
-  const newCoinAnnouncement = getNewCoinAnnouncement(coinListing)
+  const newCoinAnnouncement = ANNOUNCEMENTS.NEW_COIN(coinListing)
   const { coinfig } = window.coins[coinListing]
   const { name, symbol } = coinfig
 
   return (
     <Wrapper>
-      <NewCoinWrapper>
+      <CenterWrapper>
         <Icon name={coinListing} size='36px' style={{ marginRight: '16px' }} />
         <div>
           <VerbText>
@@ -93,9 +75,9 @@ const NewCurrency = ({ buySellActions, cacheActions, coinListing }: Props) => {
             />
           </Description>
         </div>
-      </NewCoinWrapper>
+      </CenterWrapper>
 
-      <CTAWrapper>
+      <CenterWrapper>
         <CTAButton
           data-e2e='newCoinTradeNowButton'
           nature='primary'
@@ -119,7 +101,7 @@ const NewCurrency = ({ buySellActions, cacheActions, coinListing }: Props) => {
         >
           <Icon size='20px' color='grey400' name='close-circle' />
         </CloseLink>
-      </CTAWrapper>
+      </CenterWrapper>
     </Wrapper>
   )
 }

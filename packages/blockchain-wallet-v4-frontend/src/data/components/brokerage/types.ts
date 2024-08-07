@@ -19,39 +19,38 @@ export enum OBEntityType {
   SAFE_CONNECT_UK = 'Safeconnect(UK)'
 }
 
-export type YodleeAttributesType = {
-  fastlinkParams: {
-    configName: 'Verification'
-  }
-  fastlinkUrl: string
-  token: string
-  tokenExpiresAt: string
-}
-
 export type FastLinkType = {
-  attributes: YodleeAttributesType
+  attributes: {
+    fastlinkParams: {
+      configName: 'Verification'
+    }
+    fastlinkUrl: string
+    token: string
+    tokenExpiresAt: string
+  }
   id: string
   partner: BankPartners.YODLEE
 }
 
 export type OBType = {
-  attributes: OBAttributesType
+  attributes: {
+    entity: OBEntityType
+    institutions: OBInstitution[]
+  }
   id: string
   partner: BankPartners.YAPILY
 }
 
-export type PlaidAttributesType = {
-  link_token: string
-  tokenExpiresAt: string
+type PlaidType = {
+  attributes: {
+    link_token: string
+    tokenExpiresAt: string
+  }
+  id: string
+  partner: BankPartners.PLAID
 }
 
-export type BankCredentialsType = {
-  id: string
-} & (
-  | { attributes: OBAttributesType; partner: BankPartners.YAPILY }
-  | { attributes: PlaidAttributesType; partner: BankPartners.PLAID }
-  | { attributes: YodleeAttributesType; partner: BankPartners.YODLEE }
-)
+export type BankCredentialsType = OBType | FastLinkType | PlaidType
 
 interface OBCountryType {
   countryCode2: string
@@ -72,10 +71,6 @@ export interface OBInstitution {
   media: OBMediaType[]
   name: string
 }
-interface OBAttributesType {
-  entity: OBEntityType
-  institutions: OBInstitution[]
-}
 
 export enum BankStatusType {
   ACTIVE = 'ACTIVE',
@@ -93,6 +88,7 @@ export enum BankStatusType {
 }
 
 export enum BankDWStepType {
+  ADD_WIRE_BANK = 'ADD_WIRE_BANK',
   AUTHORIZE = 'AUTHORIZE',
   BANK_LIST = 'BANK_LIST',
   CONFIRM = 'CONFIRM',
@@ -109,15 +105,16 @@ export enum BankDWStepType {
 export type BrokerageDWStepPayload =
   | {
       dwStep:
-        | BankDWStepType.ENTER_AMOUNT
+        | BankDWStepType.ADD_WIRE_BANK
         | BankDWStepType.AUTHORIZE
+        | BankDWStepType.BANK_LIST
         | BankDWStepType.CONFIRM
-        | BankDWStepType.WIRE_INSTRUCTIONS
         | BankDWStepType.DEPOSIT_CONNECT
         | BankDWStepType.DEPOSIT_STATUS
-        | BankDWStepType.BANK_LIST
+        | BankDWStepType.ENTER_AMOUNT
         | BankDWStepType.INELIGIBLE
         | BankDWStepType.LOADING
+        | BankDWStepType.WIRE_INSTRUCTIONS
     }
   | {
       dwStep: BankDWStepType.PAYMENT_ACCOUNT_ERROR
@@ -293,3 +290,5 @@ export type DepositTerms = {
   settlementType: SettlementType
   withdrawalLockDays: number
 }
+
+export type DeleteBankEndpointTypes = 'banks' | 'banktransfer'

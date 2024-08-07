@@ -3,6 +3,7 @@ import { getUnixTime } from 'date-fns'
 import { concat, isEmpty, isNil, last, prop } from 'ramda'
 import { FormAction, initialize } from 'redux-form'
 import { all, call, delay, put, select, take } from 'redux-saga/effects'
+import { call as typedCall } from 'typed-redux-saga'
 
 import { Exchange, Remote } from '@core'
 import { APIType } from '@core/network/api'
@@ -42,8 +43,7 @@ import {
   EarnTransactionType,
   PendingTransactionType,
   RewardsDepositFormType,
-  StakingDepositFormType,
-  StakingWithdrawalFormType
+  StakingDepositFormType
 } from './types'
 
 const PASSIVE_REWARDS_DEPOSIT_FORM = 'passiveRewardsDepositForm'
@@ -1077,7 +1077,7 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas: any; ne
           .getOrElse(null)
         let transaction
         if (typeof hotWalletAddress !== 'string') {
-          console.error('Unable to retreive hotwallet address; falling back to deposit and sweep.')
+          console.error('Unable to retrieve hotwallet address; falling back to deposit and sweep.')
           transaction = yield call(buildAndPublishPayment, coin, payment, depositAddress)
         } else {
           // build and publish payment to network
@@ -1317,6 +1317,17 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas: any; ne
 
   const showStakingModal = function* ({ payload }: ReturnType<typeof A.showStakingModal>) {
     const { coin, step } = payload
+
+    if (step === 'DEPOSIT') {
+      const steps = yield* typedCall(api.fetchVerificationSteps)
+      if (steps !== '' && steps.items[steps.items.length - 1].status === 'DISABLED') {
+        yield put(
+          actions.modals.showModal(ModalName.COMPLETE_USER_PROFILE, { origin: 'BuySellInit' })
+        )
+        return
+      }
+    }
+
     yield put(A.setStakingModal({ name: step }))
     yield put(
       actions.modals.showModal(ModalName.STAKING_MODAL, {

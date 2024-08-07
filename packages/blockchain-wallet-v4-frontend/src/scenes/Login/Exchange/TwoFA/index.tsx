@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { FormattedMessage } from 'react-intl'
+import { useDispatch, useSelector } from 'react-redux'
 import { Field } from 'redux-form'
 import styled from 'styled-components'
 
@@ -10,6 +11,8 @@ import FormItem from 'components/Form/FormItem'
 import FormLabel from 'components/Form/FormLabel'
 import TextBox from 'components/Form/TextBox'
 import { Wrapper } from 'components/Public'
+import { trackEvent } from 'data/analytics/slice'
+import { getAuthType } from 'data/auth/selectors'
 import { ProductAuthOptions } from 'data/auth/types'
 import { Analytics, ExchangeErrorCodes } from 'data/types'
 import { required } from 'services/forms'
@@ -31,8 +34,6 @@ const LoginWrapper = styled(Wrapper)`
 `
 const TwoFAExchange = (props: Props) => {
   const {
-    analyticsActions,
-    authType,
     busy,
     cache,
     exchangeError,
@@ -43,25 +44,31 @@ const TwoFAExchange = (props: Props) => {
     productAuthMetadata,
     submitting
   } = props
-  const twoFactorError = exchangeError && exchangeError === ExchangeErrorCodes.WRONG_2FA
+  const twoFactorError = exchangeError === ExchangeErrorCodes.WRONG_2FA
+
+  const dispatch = useDispatch()
+
+  const authType = useSelector(getAuthType)
 
   useEffect(() => {
     const twoFAType = getTwoFaType(authType)
-    analyticsActions.trackEvent({
-      key: Analytics.LOGIN_2FA_PAGE_VIEWED,
-      properties: {
-        '2fa_type': twoFAType,
-        device_origin: productAuthMetadata?.product || 'WEB',
-        originalTimestamp: new Date().toISOString()
-      }
-    })
+    dispatch(
+      trackEvent({
+        key: Analytics.LOGIN_2FA_PAGE_VIEWED,
+        properties: {
+          '2fa_type': twoFAType,
+          device_origin: productAuthMetadata?.product || 'WEB',
+          originalTimestamp: new Date().toISOString()
+        }
+      })
+    )
   }, [])
 
   return (
     <LoginWrapper>
       <WrapperWithPadding>
         <BackArrowHeader
-          {...props}
+          formValues={formValues}
           handleBackArrowClick={handleBackArrowClickExchange}
           hideGuid
           platform={magicLinkData?.platform_type}

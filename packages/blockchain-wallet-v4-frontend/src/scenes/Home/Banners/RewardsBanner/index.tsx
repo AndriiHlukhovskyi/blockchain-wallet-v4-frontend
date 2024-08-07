@@ -5,58 +5,20 @@ import { LinkContainer } from 'react-router-bootstrap'
 import { IconCloseCircleV2, IconPercent, PaletteColors } from '@blockchain-com/constellation'
 import { bindActionCreators } from '@reduxjs/toolkit'
 import { Dispatch } from 'redux'
-import styled from 'styled-components'
 
 import { Text } from 'blockchain-info-components'
 import { actions } from 'data'
 import { Analytics } from 'data/types'
-import { media } from 'services/styles'
 
-import { getEarnRewardsAnnouncement } from '../selectors'
-import { BannerButton, CloseLink, IconWrapper, Row } from '../styles'
+import ANNOUNCEMENTS from '../constants'
+import { BannerButton, CloseLink, Column, Copy, Row, SyncIconWrapper, Wrapper } from '../styles'
 
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  border: 1px solid ${(props) => props.theme.grey000};
-  border-radius: 0.5rem;
-  padding: 1.25rem;
-
-  ${media.atLeastLaptop`
-    height: 5rem;
-    padding: 0 1.25rem;
-  `}
-  ${media.mobile`
-    padding: 0,75rem;
-    flex-direction: column;
-  `}
-`
-
-const Column = styled.div`
-  display: flex;
-  flex-direction: column;
-
-  & > div:first-child {
-    margin-bottom: 0.25rem;
-  }
-`
-const PendingIconWrapper = styled(IconWrapper)`
-  background-color: ${(props) => props.theme.blue100};
-`
-const Copy = styled(Text)`
-  display: flex;
-  align-items: center;
-  margin-right: 1.25rem;
-  font-size: 0.75rem;
-`
+const { BANNER_REWARDS_CLICKED, BANNER_REWARDS_VIEWED } = Analytics
 
 const StartEarningRewards: React.FC<Props> = (props) => {
   const {
     analyticsActions: { trackEvent }
   } = props
-  const { BANNER_REWARDS_CLICKED, BANNER_REWARDS_VIEWED } = Analytics
 
   useEffect(() => {
     trackEvent({
@@ -78,14 +40,12 @@ const StartEarningRewards: React.FC<Props> = (props) => {
     })
   }
 
-  const completeAnnouncement = getEarnRewardsAnnouncement()
-
   return (
     <Wrapper>
       <Row>
-        <PendingIconWrapper>
+        <SyncIconWrapper>
           <IconPercent label='percentage' color={PaletteColors['blue-600']} size='medium' />
-        </PendingIconWrapper>
+        </SyncIconWrapper>
         <Column>
           <Text size='20px' weight={600} color='grey800'>
             <FormattedMessage
@@ -108,7 +68,7 @@ const StartEarningRewards: React.FC<Props> = (props) => {
       </LinkContainer>
       <CloseLink
         data-e2e='newCoinCloseButton'
-        onClick={() => props.cacheActions.announcementDismissed(completeAnnouncement)}
+        onClick={() => props.cacheActions.announcementDismissed(ANNOUNCEMENTS.EARN_REWARDS)}
       >
         <IconCloseCircleV2
           label='close'

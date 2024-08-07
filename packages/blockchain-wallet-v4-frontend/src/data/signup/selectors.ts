@@ -69,3 +69,11 @@ export function getRecoveryTwoFAVerification(
 export function getSignupCountry(state: RootState): SignupStateType['signupCountry'] {
   return state.signup.signupCountry
 }
+
+export function getSignupCountryState(state: RootState): SignupStateType['signupCountryState'] {
+  return state.signup.signupCountryState
+}
+
+export function bakktRedirectUSStates(state: RootState): SignupStateType['bakktRedirectUSStates'] {
+  return state.signup.bakktRedirectUSStates
+}

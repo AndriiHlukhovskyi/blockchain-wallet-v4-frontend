@@ -61,26 +61,34 @@
         "isReferralRetrievalEnabled": true,
         "isStakingEnabled": true,
         "isStakingWithdrawalEnabled": true,
+        "isSuperAppEnabled": true,
+        "isMnemonicRecoveryEnabled": true,
         "mergeAndUpgrade": false,
         "nftExplorer": true,
         "recurringBuys": true,
         "rewardsFlowUnderSwapEnabled": true,
         "rewardsPromoBanner": true,
         "secureEmailSmsUpdate": false,
+        "showImportedAddressSweep": false,
         "showEarnAvailableAssetsCheckbox": true,
         "showProveFlow": true,
         "showSilverRevamp": true,
         "showTermsAndConditions": false,
+        "sofiAssociateUserBeforeEmailVerification": true,
         "stakingPromoBanner": true,
         "stxSelfCustodyEnableAirdrop": true,
         "stxSelfCustodyEnableAll": true,
         "themeEnabled": true,
         "unifiedAccountLogin": true,
+        "useAgentHotWalletAddress": true,
+        "useAgentHotWalletAddressForSell": false,
         "useLoqateService": true,
         "useNewPaymentProviders": true,
         "useVgsProvider": true,
         "walletConnect": true,
-        "walletDebitCardEnabled": true
+        "walletDebitCardEnabled": true,
+        "proveEnabled": true,
+        "showFiatEntityRemediationAlert": true
       }
     }
   },
@@ -93,8 +101,9 @@
     "horizon": "https://horizon.stellar.org",
     "opensea": "https://testnets-api.opensea.io",
     "root": "https://blockchain.info",
-    "veriff": "https://magic.veriff.me",
+    "veriff": "*.veriff.me",
     "walletHelper": "https://wallet-helper.blockchain.com",
     "webSocket": "wss://ws.blockchain.info"
-  }
+  },
+  "bakktRedirectUSStates": ["US-HI", "US-LA", "US-NJ", "US-NV", "US-TN", "US-TX", "US-VA"]
 }

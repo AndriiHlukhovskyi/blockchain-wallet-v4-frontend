@@ -1,3 +1,5 @@
+import { VerificationStepsType } from '@core/network/api/kyc/types'
+
 import {
   FindAddressResponse,
   RetrieveAddress,
@@ -58,11 +60,12 @@ export default ({
       url: nabuUrl
     })
 
-  const createOrGetUser = (retailToken) =>
+  const createOrGetUser = (retailToken, partnerReferralCode) =>
     post({
       contentType: 'application/json',
       data: {
-        jwt: retailToken
+        jwt: retailToken,
+        partnerReferralCode
       },
       endPoint: '/users',
       url: nabuUrl
@@ -210,6 +213,13 @@ export default ({
         'X-WALLET-GUID': walletGuid,
         'x-app-version': '6.11.1'
       },
+      url: nabuUrl
+    })
+
+  const getUserLocation2 = () =>
+    get({
+      contentType: 'application/json',
+      endPoint: '/geolocation2',
       url: nabuUrl
     })
 
@@ -367,14 +377,22 @@ export default ({
       url: nabuUrl
     })
 
+  const fetchVerificationSteps = (): VerificationStepsType | '' =>
+    authorizedGet({
+      contentType: 'application/json',
+      endPoint: '/onboarding/handhold',
+      url: nabuUrl
+    })
+
   return {
-    approveAccountReset,
     // checkIsValidReferralCode,
+    approveAccountReset,
     createExchangeUser,
     createLinkAccountId,
     createOrGetUser,
     exchangeResetPassword,
     exchangeSignIn,
+    fetchVerificationSteps,
     finaliseLinking,
     findUserAddress,
     generateRetailToken,
@@ -384,6 +402,7 @@ export default ({
     getPaymentsAccountExchange,
     getUser,
     getUserCampaigns,
+    getUserLocation2,
     getUserReferralInfo,
     getUserRiskSettings,
     getUserTermsAndConditions,

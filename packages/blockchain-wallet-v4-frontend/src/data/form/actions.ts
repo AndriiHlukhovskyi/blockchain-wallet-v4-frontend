@@ -1,5 +1,3 @@
-import * as AT from './actionTypes'
-
 export {
   arrayInsert,
   arrayMove,
@@ -35,8 +33,3 @@ export {
   untouch,
   updateSyncErrors
 } from 'redux-form'
-
-export const change2 = (form, field, value) => ({
-  payload: { field, form, value },
-  type: AT.CHANGE2
-})

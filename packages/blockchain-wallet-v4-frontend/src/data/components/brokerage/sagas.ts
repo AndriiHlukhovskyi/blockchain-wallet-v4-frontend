@@ -1,5 +1,4 @@
 import { getFormValues } from 'redux-form'
-import { END } from 'redux-saga'
 import { call, delay, put, race, retry, select, take } from 'redux-saga/effects'
 
 import { Remote } from '@core'
@@ -44,16 +43,27 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas: any; ne
     coreSagas,
     networks
   })
-  const deleteSavedBank = function* ({ payload: bankId }: ReturnType<typeof A.deleteSavedBank>) {
+  const deleteSavedBank = function* ({
+    payload: { bankId, bankType = 'banktransfer' }
+  }: ReturnType<typeof A.deleteSavedBank>) {
     try {
       yield put(actions.form.startSubmit('linkedBanks'))
-      yield call(api.deleteSavedAccount, bankId, 'banktransfer')
-      yield put(A.fetchBankTransferAccounts())
-      yield take([A.fetchBankTransferAccountsSuccess.type, A.fetchBankTransferAccountsError.type])
-      yield put(actions.form.stopSubmit('linkedBanks'))
-      yield put(actions.alerts.displaySuccess('Bank removed.'))
+      yield call(api.deleteSavedAccount, bankId, bankType)
+      if (bankType === 'banktransfer') {
+        yield put(A.fetchBankTransferAccounts())
+        yield take([A.fetchBankTransferAccountsSuccess.type, A.fetchBankTransferAccountsError.type])
+      } else {
+        yield put(actions.custodial.fetchCustodialBeneficiaries({}))
+        yield take([
+          actions.custodial.fetchCustodialBeneficiariesSuccess.type,
+          actions.custodial.fetchCustodialBeneficiariesFailure.type
+        ])
+      }
       yield put(actions.modals.closeModal(ModalName.BANK_DETAILS_MODAL))
       yield put(actions.modals.closeModal(ModalName.REMOVE_BANK_MODAL))
+      yield put(actions.form.stopSubmit('linkedBanks'))
+      yield put(actions.form.destroy('linkedBanks'))
+      yield put(actions.alerts.displaySuccess('Bank removed.'))
     } catch (e) {
       const error = errorHandler(e)
       yield put(actions.form.stopSubmit('linkedBanks', { _error: error }))
@@ -293,6 +303,11 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas: any; ne
   }: ReturnType<typeof A.handleDepositFiatClick>) {
     const isUserTier2 = yield call(isTier2)
     if (!isUserTier2) {
+      yield put(
+        actions.modals.showModal(ModalName.UPGRADE_NOW_SILVER_MODAL, {
+          origin: BrokerageModalOriginType.DEPOSIT_BUTTON
+        })
+      )
       return
     }
     // Verify identity before deposit if TIER 2
@@ -309,7 +324,7 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas: any; ne
 
     yield put(
       actions.components.brokerage.showModal({
-        modalType: 'BANK_DEPOSIT_MODAL',
+        modalType: ModalName.BANK_DEPOSIT_MODAL,
         origin: BrokerageModalOriginType.DEPOSIT_BUTTON
       })
     )
@@ -370,6 +385,11 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas: any; ne
   const handleWithdrawClick = function* ({ payload }: ReturnType<typeof A.handleWithdrawClick>) {
     const isUserTier2 = yield call(isTier2)
     if (!isUserTier2) {
+      yield put(
+        actions.modals.showModal(ModalName.UPGRADE_NOW_SILVER_MODAL, {
+          origin: BrokerageModalOriginType.WITHDRAWAL
+        })
+      )
       return
     }
     // Verify identity before deposit if TIER 2
@@ -387,10 +407,9 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas: any; ne
     yield put(actions.form.destroy('brokerageTx'))
     yield put(actions.components.withdraw.showModal({ fiatCurrency: payload }))
 
-    const bankTransferAccountsR = selectors.components.brokerage.getBankTransferAccounts(
-      yield select()
-    )
-    const bankTransferAccounts = bankTransferAccountsR.getOrElse([])
+    const bankTransferAccounts = selectors.components.brokerage
+      .getBankTransferAccounts(yield select())
+      .getOrElse([])
     if (bankTransferAccounts.length) {
       yield put(
         actions.components.brokerage.setBankDetails({
@@ -407,11 +426,6 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas: any; ne
 
     // get current user tier
     const isUserTier2 = yield call(isTier2)
-    yield put(actions.custodial.fetchProductEligibilityForUser())
-    yield take([
-      actions.custodial.fetchProductEligibilityForUserSuccess.type,
-      actions.custodial.fetchProductEligibilityForUserFailure.type
-    ])
 
     const products = selectors.custodial.getProductEligibilityForUser(yield select()).getOrElse({
       custodialWallets: { canDepositCrypto: false, enabled: false },
@@ -485,9 +499,7 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas: any; ne
     const { amount, currency } = yield select(getFormValues('brokerageTx'))
     const { id, partner } = yield select(selectors.components.brokerage.getAccount)
     const domainsR = yield select(selectors.core.walletOptions.getDomains)
-    const { comRoot } = domainsR.getOrElse({
-      comRoot: 'https://www.blockchain.com'
-    })
+    const { comRoot } = domainsR.getOrElse({ comRoot: 'https://www.blockchain.com' })
     const callback =
       partner === BankPartners.YAPILY ? `${comRoot}/brokerage-link-success` : undefined
     const attributes = { callback }
@@ -596,7 +608,7 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas: any; ne
       { settlementRequest: { amount, product: ProductTypes.SIMPLEBUY } }
     )
 
-    const { reason, settlementType } = status.attributes?.settlementResponse
+    const { reason, settlementType } = status.attributes?.settlementResponse ?? {}
 
     if (settlementType === 'UNAVAILABLE' || reason === 'REQUIRES_UPDATE') {
       yield put(

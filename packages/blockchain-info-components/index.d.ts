@@ -110,6 +110,7 @@ export const Icon: FunctionComponent<{
   onClick?: () => void
   role?: 'button'
 }>
+export const ActiveRewardsIcon: FunctionComponent<{ coin: string }>
 export const CoinAccountIcon: FunctionComponent<{
   accountType: 'CUSTODIAL' | 'EXCHANGE' | 'INTEREST' | 'STAKING' | 'ACCOUNT' | 'ACTIVE'
   coin: AllCoinsType
@@ -262,10 +263,17 @@ export const TextGroup: FunctionComponent<{
   inline?: boolean
   style?: CSSProperties
 }>
+enum ToastNatureType {
+  ERROR = 'error',
+  INFO = 'info',
+  SUCCESS = 'success',
+  WARN = 'warn'
+}
 export const Toast: FunctionComponent<{
-  nature?: 'success' | 'error' | 'warn'
+  children: ReactNode
   coin?: CoinType
-  onClose?: () => void
+  nature?: ToastNatureType
+  onClose: () => void
   persist?: boolean
   timeout?: number
 }>
@@ -275,7 +283,7 @@ export const Tooltip: FunctionComponent<{
   maxWidth?: string
   place?: 'top' | 'right' | 'bottom' | 'left'
 }>
-export const TooltipHost: FunctionComponent<{ id: string }>
+export const TooltipHost: FunctionComponent<{ id: string; value?: string }>
 export const TooltipIcon: FunctionComponent<{
   color?: keyof DefaultTheme
   name: keyof IcoMoonType | AllCoinsType

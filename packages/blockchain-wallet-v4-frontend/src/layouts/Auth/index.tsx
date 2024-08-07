@@ -1,14 +1,13 @@
 import React, { ComponentType } from 'react'
-import { connect, ConnectedProps } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { Route } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Alerts from 'components/Alerts'
-import { selectors } from 'data'
-import { LOGIN_FORM } from 'data/auth/model'
+import { getProduct } from 'data/auth/selectors'
 import { useDefer3rdPartyScript } from 'hooks'
 import ErrorBoundary from 'providers/ErrorBoundaryProvider'
-import { media } from 'services/styles'
+import { isMobile, media } from 'services/styles'
 
 import Modals from '../../modals'
 import Footer from './components/Footer'
@@ -16,19 +15,8 @@ import Header from './components/Header'
 
 const qsParams = new URLSearchParams(window.location.hash)
 const isLatam = qsParams.has('latam')
-
-const FooterContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  width: 100%;
-  margin: 6rem 0 2rem;
-  ${media.mobile`
-    flex-direction: column;
-    margin-top: 8px;
-  `}
-`
+const isSofi = window.location.hash.includes('sofi')
+const isSofiOnMobile = isSofi && isMobile()
 
 const Wrapper = styled.div<{ authProduct?: string }>`
   background-color: ${(props) =>
@@ -36,6 +24,8 @@ const Wrapper = styled.div<{ authProduct?: string }>`
       ? props.theme.exchangeLogin
       : isLatam
       ? '#04001F'
+      : isSofiOnMobile
+      ? 'white'
       : props.theme.grey900};
   height: auto;
   min-height: 100%;
@@ -66,18 +56,13 @@ const ContentContainer = styled.div`
   max-width: 100%;
   box-sizing: border-box;
   margin: 0 16px;
+  ${media.mobile`
+  margin: 0;
+`}
 `
 
-const AuthLayoutContainer = ({
-  authProduct,
-  component: Component,
-  exact = false,
-  formValues,
-  pageTitle,
-  path,
-  platform,
-  unified
-}: Props) => {
+const AuthLayoutContainer = ({ component: Component, exact = false, pageTitle, path }: Props) => {
+  const authProduct = useSelector(getProduct)
   // lazy load google captcha
   useDefer3rdPartyScript(
     `https://www.google.com/recaptcha/enterprise.js?render=${window.CAPTCHA_KEY}`,
@@ -105,15 +90,7 @@ const AuthLayoutContainer = ({
             <ContentContainer>
               <Component {...matchProps} />
             </ContentContainer>
-            <FooterContainer>
-              <Footer
-                authProduct={authProduct}
-                formValues={formValues}
-                platform={platform}
-                path={path}
-                unified={unified}
-              />
-            </FooterContainer>
+            {!isSofiOnMobile && <Footer path={path} />}
           </Wrapper>
         </ErrorBoundary>
       )}
@@ -121,20 +98,11 @@ const AuthLayoutContainer = ({
   )
 }
 
-const mapStateToProps = (state) => ({
-  authProduct: selectors.auth.getProduct(state),
-  formValues: selectors.form.getFormValues(LOGIN_FORM)(state),
-  platform: selectors.auth.getMagicLinkData(state)?.platform_type,
-  unified: selectors.cache.getUnifiedAccountStatus(state)
-})
-
-const connector = connect(mapStateToProps)
-
-type Props = ConnectedProps<typeof connector> & {
+type Props = {
   component: ComponentType<any>
   exact?: boolean
   pageTitle?: string
   path: string
 }
 
-export default connector(AuthLayoutContainer)
+export default AuthLayoutContainer

@@ -1,27 +1,7 @@
-import { path } from 'ramda'
-
-import { TimeRange } from '@core/types'
 import { RootState } from 'data/rootReducer'
 
 export const getCoinDisplayed = (state: RootState) => state.preferences.coinDisplayed
 export const getLanguage = (state: RootState) => state.preferences.language
-export const getPriceChart = (state: RootState) => {
-  // 🆕 Migrate old time ranges
-  // 1day, 1week, 1month, 1year
-  // to
-  // day, week, month, year
-  if (
-    state.preferences.priceChart &&
-    state.preferences.priceChart.time &&
-    state.preferences.priceChart.time.includes('1')
-  ) {
-    return {
-      ...state.preferences.priceChart,
-      time: state.preferences.priceChart.time.split('1')[1] as TimeRange
-    }
-  }
-  return state.preferences.priceChart
-}
 export const getBSCheckoutPreferences = (state: RootState) => state.preferences.sbCheckout
 export const getShowAirdropClaimModal = (state: RootState) =>
   state.preferences.showAirdropClaimModal
@@ -34,6 +14,6 @@ export const getShowUpgradeForAirdropModal = (state: RootState) =>
   state.preferences.showUpgradeForAirdropModal
 export const getShowUpgradeForStxAirdropModal = (state: RootState) =>
   state.preferences.showUpgradeForStxAirdropModal
-export const getTheme = (state: RootState) => path(['preferences', 'theme'], state)
+export const getTheme = (state: RootState) => state.preferences.theme
 export const getTotalBalancesDropdown = (state: RootState) =>
   state.preferences.totalBalancesDropdown

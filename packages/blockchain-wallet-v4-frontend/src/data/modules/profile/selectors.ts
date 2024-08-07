@@ -87,6 +87,8 @@ export const getKycDocResubmissionStatus = compose(
   lift(path(['resubmission', 'reason'])),
   getUserData
 )
+export const getUserLegalEntity = (state: RootState) =>
+  state.profile.userData.map((e) => e.userLegalEntity).getOrElse(undefined)
 
 export const getTiers = path(['profile', 'userTiers'])
 export const getTier = curry((state, tierIndex) =>
@@ -145,6 +147,24 @@ export const getLinkToExchangeAccountDeeplink = path([
 ])
 export const getShareWalletAddressesStatus = (state: RootState) =>
   state.profile.exchangeOnboarding.shareWalletAddressesWithExchange
+
+export const getSofiUserData = (state: RootState) => state.profile.sofiData
+
+export const getSofiMigrationStatus = (state: RootState) => state.profile.sofiMigrationStatus
+
+export const getSofiLinkData = (state: RootState) => state.profile.sofiLinkData
+
+export const getSofiAssociateNabuUserStatus = (state: RootState) =>
+  state.profile.sofiAssociateNabuUser
+
+export const getSofiMigrationStatusFromPolling = (state: RootState) =>
+  state.profile.sofiMigrationStatusFromPolling
+
+export const getSofiUserMigrationStatus = (state: RootState) =>
+  state.profile.sofiUserMigrationStatus
+
+export const getSofiMigrationTransferedBalances = (state: RootState) =>
+  state.profile.sofiMigrationTransferedBalances
 
 export const getRemainingCoins = (state) => {
   // TODO, fix this

@@ -25,7 +25,8 @@ export const isBrowserSupported = () => {
     firefox: '>80', // chromium
     opera: '>66', // chromium non-standard versioning
     safari: '>12', // webkit
-    vivaldi: '>4' // chromium non-standard versioning
+    samsung_internet: '>13.0.1.64', // chromium 83
+    vivaldi: '>4' // chromium non-standard versioning,
   })
 }
 
@@ -34,4 +35,14 @@ export const isBrowserSafari = () => {
   return browser.satisfies({
     safari: '>12'
   })
+}
+
+export const isBrowserAndroid = () => {
+  const browser = Bowser.getParser(window.navigator.userAgent)
+  if (browser.getOSName() === 'Android') return true
+}
+
+export const isBrowserIOS = () => {
+  const browser = Bowser.getParser(window.navigator.userAgent)
+  if (browser.getOSName() === 'iOS') return true
 }

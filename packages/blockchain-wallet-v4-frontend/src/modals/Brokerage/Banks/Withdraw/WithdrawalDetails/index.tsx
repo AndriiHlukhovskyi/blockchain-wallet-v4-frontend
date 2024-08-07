@@ -1,11 +1,13 @@
 import React from 'react'
 import { FormattedMessage } from 'react-intl'
+import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 
 import { fiatToString } from '@core/exchange/utils'
-import { WalletFiatEnum, WalletFiatType, WithdrawResponseType } from '@core/types'
+import { WalletFiatType, WithdrawResponseType } from '@core/types'
 import { Button, Icon, Text } from 'blockchain-info-components'
-import { UserDataType } from 'data/types'
+import { getWithdrawal } from 'data/components/withdraw/selectors'
+import { getUserCountryCode } from 'data/modules/profile/selectors'
 
 const Wrapper = styled.div`
   height: 100%;
@@ -38,8 +40,9 @@ const SuccessIcon = styled(Icon)`
   right: -22px;
   background: ${(props) => props.theme.white};
 `
-const WithdrawalDetails = ({ fiatCurrency, handleClose, userData, withdrawal }: Props) => {
-  const userCountryCode = userData?.address?.country || 'default'
+const WithdrawalDetails = ({ fiatCurrency, handleClose }: Props) => {
+  const withdrawal = useSelector(getWithdrawal) as WithdrawResponseType
+  const userCountryCode = useSelector(getUserCountryCode).getOrElse('default')
 
   return (
     <Wrapper>
@@ -84,9 +87,7 @@ const WithdrawalDetails = ({ fiatCurrency, handleClose, userData, withdrawal }: 
             <FormattedMessage
               id='modals.withdraw.success'
               defaultMessage='Success! We are withdrawing the cash from your {currency} Wallet now. The funds should be in your bank in 1-3 business days.'
-              values={{
-                currency: fiatCurrency
-              }}
+              values={{ currency: fiatCurrency }}
             />
           )}
         </SubTitle>
@@ -105,13 +106,9 @@ const WithdrawalDetails = ({ fiatCurrency, handleClose, userData, withdrawal }: 
   )
 }
 
-type OwnProps = {
+type Props = {
   fiatCurrency: WalletFiatType
   handleClose: () => void
-  userData: UserDataType
-  withdrawal: WithdrawResponseType
 }
-
-export type Props = OwnProps
 
 export default WithdrawalDetails

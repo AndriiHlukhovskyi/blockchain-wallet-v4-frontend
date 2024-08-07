@@ -150,6 +150,13 @@ const buildWebpackConfig = (envConfig, extraPluginsList) => ({
       }),
       new HtmlReplaceWebpackPlugin([
         {
+          pattern: '**WALLET_V5_LINK**',
+          // Note: using an obvious redirection issue
+          replacement: process.env.WALLET_V5_LINK
+            ? process.env.WALLET_V5_LINK
+            : 'https://google.com'
+        },
+        {
           pattern: '**APP_VERSION**',
           replacement: require(CONFIG_PATH.pkgJson).version
         },
@@ -249,7 +256,7 @@ const buildDevServerConfig = (
         allowUnsafeStyles
           ? `style-src 'self' 'unsafe-inline'`
           : `style-src 'nonce-${CSP_NONCE}' 'self'`,
-        `frame-src ${envConfig.WALLET_HELPER_DOMAIN} ${envConfig.ROOT_URL} https://magic.veriff.me https://www.google.com/ https://pay.google.com/ https://www.gstatic.com https://localhost:8080 http://localhost:8080 http://localhost:8081 https://api.sandbox.sardine.ai https://api.sardine.ai`,
+        `frame-src ${envConfig.WALLET_HELPER_DOMAIN} ${envConfig.ROOT_URL} https://www.google.com/ https://pay.google.com/ https://www.gstatic.com https://localhost:8080 http://localhost:8080 http://localhost:8081 https://api.sandbox.sardine.ai https://api.sardine.ai`,
         `child-src https://localhost:8080 http://localhost:8080 ${envConfig.WALLET_HELPER_DOMAIN} blob:`,
         `script-src-elem 'self' 'nonce-${CSP_NONCE}' https://www.googletagmanager.com https://api.sandbox.sardine.ai https://api.sardine.ai`,
         `worker-src 'self' blob:`,

@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import { FormattedMessage } from 'react-intl'
-import { find, propEq, propOr } from 'ramda'
 import { Field, InjectedFormProps } from 'redux-form'
 import styled from 'styled-components'
 
@@ -33,6 +32,7 @@ import { applyToUpperCase } from 'services/forms/normalizers'
 
 import { SIGNUP_FORM } from '../..'
 import { SubviewProps } from '../../types'
+import ContinueOnPhone from './ContinueOnPhone'
 
 const StyledForm = styled(Form)`
   margin-top: 20px;
@@ -69,6 +69,14 @@ const PasswordRequirementText = styled(Text)<{ isValid?: boolean }>`
   color: ${(props) => (props.isValid ? props.theme.grey800 : props.theme.red600)};
 `
 
+const EmailErrorText = styled(Text)`
+  font-size: 12px;
+  font-weight: 400;
+  margin-top: 4px;
+  margin-left: 2px;
+  color: ${(props) => props.theme.red600};
+`
+
 const validatePasswordConfirmation = validPasswordConfirmation('password')
 
 const getCountryElements = (countries: Array<CountryType>) => [
@@ -93,6 +101,7 @@ const getStateElements = (states: Array<StateType>) => [
 
 const SignupForm = (props: Props) => {
   const {
+    bakktRedirectUSStates,
     formActions,
     formValues,
     goals,
@@ -103,19 +112,24 @@ const SignupForm = (props: Props) => {
     isValidReferralCode,
     onCountrySelect,
     onSignupSubmit,
+    setShowModal,
     showState
   } = props
+
+  // @ts-ignore
+  const lowercaseError = props.registering?.error?.reason === 'email.lowercase'
+
   const passwordValue = formValues?.password || ''
   const referralValue = formValues?.referral || ''
+  const isUSStateUnsupported = bakktRedirectUSStates.includes(formValues?.state)
+
   const showReferralError =
     referralValue.length > 0 && isValidReferralCode !== undefined && !isValidReferralCode
 
   const { data: supportedCountries } = useCountryList({ scope: CountryScope.SIGNUP })
   const { data: supportedUSStates } = useUSStateList()
-
-  const dataGoal = find(propEq('name', 'signup'), goals)
-  const goalData: SignUpGoalDataType = propOr({}, 'data', dataGoal)
-  const { email } = goalData
+  const dataGoal = goals.find((g) => g.name === 'signup')
+  const { email }: SignUpGoalDataType = dataGoal?.data || {}
 
   useEffect(() => {
     if (email) {
@@ -148,6 +162,14 @@ const SignupForm = (props: Props) => {
             validate={[required, validEmail]}
           />
         </FormItem>
+        {lowercaseError && (
+          <EmailErrorText>
+            <FormattedMessage
+              id='scenes.security.email.lowercase'
+              defaultMessage='Please enter your email address using lowercase letters only.'
+            />
+          </EmailErrorText>
+        )}
       </FormGroup>
       <FormGroup>
         <FormItem>
@@ -264,6 +286,11 @@ const SignupForm = (props: Props) => {
             />
           </FieldWithoutTopRadius>
         ) : null}
+        {isUSStateUnsupported && (
+          <FormItem>
+            <ContinueOnPhone setShowModal={setShowModal} />
+          </FormItem>
+        )}
       </FormGroup>
       {isReferralEnabled && (
         <FormGroup>
@@ -321,6 +348,6 @@ const SignupForm = (props: Props) => {
   )
 }
 
-type Props = InjectedFormProps<{}> & SubviewProps
+type Props = InjectedFormProps<{}> & SubviewProps & { setShowModal?: (e) => void }
 
 export default SignupForm

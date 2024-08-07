@@ -22,18 +22,18 @@ const CellWrapper = styled(HeaderWrapper)`
     cursor: pointer;
   }
 `
-const CoinIcon = styled(Icon)``
 
 export const getNameColumn = (
   modalActions: TableColumnsType['modalActions'],
   routerActions: TableColumnsType['routerActions'],
-  isCoinViewV2Enabled: boolean
+  isCoinViewV2Enabled: boolean,
+  isUkUser: boolean
 ) => ({
   Cell: ({ row: { original: values } }) => {
     return (
       <CellWrapper
         onClick={() => {
-          if (isCoinViewV2Enabled) {
+          if (isCoinViewV2Enabled || isUkUser) {
             routerActions.push(`/coins/${values.coin}`)
           } else {
             modalActions.showModal(ModalName.REQUEST_CRYPTO_MODAL, {
@@ -43,7 +43,7 @@ export const getNameColumn = (
           }
         }}
       >
-        <CoinIcon name={values.coin} size='32px' color={values.coin} />
+        <Icon name={values.coin} size='32px' color={values.coin} />
         <CellText>{values.name}</CellText>
       </CellWrapper>
     )

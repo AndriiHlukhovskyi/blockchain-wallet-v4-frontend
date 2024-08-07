@@ -8,6 +8,7 @@ import alertOrange from './img/alert-orange.svg'
 import appleAppStoreBadge from './img/apple-app-store-badge.svg'
 import applePay from './img/apple-pay-icon.svg'
 import arrowLeft from './img/arrow-left.svg'
+import arrowRightCircle from './img/arrow-right-circle.svg'
 import bank from './img/bank.svg'
 import bankEmpty from './img/bank-empty.svg'
 import bankEmptyBlue from './img/bank-empty-blue.svg'
@@ -37,8 +38,10 @@ import barChart from './img/bar-chart.svg'
 import blockchainIcon from './img/bc-icon.svg'
 import blockchainLogo from './img/bc-logo.svg'
 import blockchainLogoCircle from './img/bc-logo-circle.svg'
+import blockchainSofiLogo from './img/bc-sofi-logo.svg'
 import bgBannerPattern from './img/bg-banner-pattern.svg'
 import bgBannerPatternLg from './img/bg-banner-pattern-lg.svg'
+import bgModalGradient from './img/bg-modal-gradient.svg'
 import bgPattern from './img/bg-pattern.svg'
 import bgPatternLatam from './img/bg-pattern-latam.svg'
 import bgReferral from './img/bg-referral.svg'
@@ -60,8 +63,10 @@ import checkEmptyBlue from './img/check-empty-blue.svg'
 import checkEmptyWhite from './img/check-empty-white.svg'
 import checkmarkCircleGreen from './img/checkmark-circle-green.svg'
 import circleEmpty from './img/circle-empty.svg'
+import circleQuestion from './img/circle-question.svg'
 import closeError from './img/close-error.svg'
 import cloudCheck from './img/cloud_check.svg'
+import cog from './img/cog.svg'
 import cowboySuite from './img/cowboy-suite.png'
 import cowboysLogo from './img/cowboys.svg'
 import creditCard from './img/credit-card.svg'
@@ -72,13 +77,21 @@ import orderFailed from './img/debitCard/order-failed.png'
 import orderMyCard from './img/debitCard/order-my-card.png'
 import orderSuccess from './img/debitCard/order-success.png'
 import terminateCard from './img/debitCard/terminate-card.png'
-import dexOnboardingSlideFunds from './img/dex-onboarding-slide-funds@2x.png'
-import dexOnboardingSlideNotEligible from './img/dex-onboarding-slide-not-eligible@2x.png'
-import dexOnboardingSlideSwap from './img/dex-onboarding-slide-swap@2x.png'
-import dexOnboardingSlideWelcome from './img/dex-onboarding-slide-welcome@2x.png'
+import dexGas from './img/dex/gas.svg'
+import dexNoTokenBalances from './img/dex/no-token-balances.png'
+import dexOnboardingSlideFunds from './img/dex/onboarding-slide-funds@2x.png'
+import dexOnboardingSlideNotEligible from './img/dex/onboarding-slide-not-eligible@2x.png'
+import dexOnboardingSlideSwap from './img/dex/onboarding-slide-swap@2x.png'
+import dexOnboardingSlideWelcome from './img/dex/onboarding-slide-welcome@2x.png'
+import dexPercentage from './img/dex/percentage.svg'
+import dexSwapConfirming from './img/dex/swap-confirming.png'
+import dexSwapError from './img/dex/swap-error.png'
+import dexTokenAllowance from './img/dex/token-allowance.svg'
+import dexVerificationCheck from './img/dex/verification-check.svg'
 import bars from './img/earn/bars.svg'
 import btcClock from './img/earn/btc-clock.svg'
 import btcGraph from './img/earn/btc-graph.svg'
+import earnClock from './img/earn/clock.svg'
 import earnActivityEmpty from './img/earn/earn-activity-empty.svg'
 import earnEmpty from './img/earn/earn-empty.svg'
 import ethLocked from './img/earn/eth-locked.svg'
@@ -110,7 +123,10 @@ import googlePay from './img/google-pay-icon.svg'
 import googlePlayBadge from './img/google-play-badge.svg'
 import greyVerified from './img/grey-verified.svg'
 import identification from './img/identification.svg'
+import identificationCircle from './img/identification-circle.svg'
+import identificationCircleBlack from './img/identification-circle-black.svg'
 import identityVerification from './img/identity-verification.svg'
+import identityVerificationPending from './img/identity-verification-pending.svg'
 import instagram from './img/instagram.svg'
 import interest from './img/interest.svg'
 import introHand from './img/intro-hand.png'
@@ -118,6 +134,7 @@ import latamSignupPhone from './img/latam-signup-phone.svg'
 import lockOpen from './img/lock-open.svg'
 import logoLoader from './img/logo-loader.gif'
 import mastercardLogo from './img/mastercard-logo.svg'
+import mobile from './img/mobile.svg'
 import money from './img/money.png'
 import nft from './img/nft.png'
 import nftcollections from './img/nfts/collections.png'
@@ -134,6 +151,8 @@ import nftNothingHere from './img/nfts/nft-nothing-here.svg'
 import nftPurchase from './img/nfts/nft-purchase.svg'
 import nftnouns from './img/nfts/nouns.png'
 import nftpainthyperlink from './img/nfts/paint-hyperlink.png'
+import noBalance from './img/no-balance.svg'
+import offline from './img/offline.svg'
 import opensea from './img/opensea.png'
 import percentLightBlueCircle from './img/percent-light-blue-circle.svg'
 import percentWhiteCircle from './img/percent-white-circle.svg'
@@ -154,9 +173,13 @@ import send from './img/send.svg'
 import sendCrypto from './img/send-crypto.svg'
 import sendNoFundsPromo from './img/send-no-funds-promo.svg'
 import smartphone from './img/smartphone.png'
+import sofiBlockchainMigration from './img/sofi-blockchain-migration.svg'
+import sofiFinishMigration from './img/sofi-finish-migration.svg'
+import sofiMigrationPending from './img/sofi-migration-pending.svg'
 import sourceOfWealth from './img/source-of-wealth.svg'
 import ssBcLogo from './img/ss-bc-logo.svg'
 import subtractCheckCircle from './img/subtract-check-circle.png'
+import superAppIcon from './img/super-app-icon.svg'
 import swap from './img/swap.svg'
 import swapBlue from './img/swap-blue.svg'
 import swapSuccess from './img/swap-success.svg'
@@ -189,6 +212,8 @@ const Images = {
   'apple-app-store-badge': appleAppStoreBadge,
   'apple-pay': applePay,
   'arrow-left': arrowLeft,
+  'arrow-right-circle': arrowRightCircle,
+  'backgorund-modal-gradient': bgModalGradient,
   bank,
   'bank-empty': bankEmpty,
   'bank-empty-blue': bankEmptyBlue,
@@ -228,6 +253,7 @@ const Images = {
   'blockchain-logo': blockchainLogo,
   'blockchain-logo-circle': blockchainLogoCircle,
   'blockchain-silver': blockchainSilver,
+  'blockchain-sofi-logo': blockchainSofiLogo,
   'blue-verified': blueVerified,
   'btc-clock': btcClock,
   'btc-graph': btcGraph,
@@ -244,8 +270,10 @@ const Images = {
   'check-empty-white': checkEmptyWhite,
   'checkmark-circle-green': checkmarkCircleGreen,
   'circle-empty': circleEmpty,
+  'circle-question': circleQuestion,
   'close-error': closeError,
   'cloud-check': cloudCheck,
+  cog,
   'cowboy-suite': cowboySuite,
   cowboys: cowboysLogo,
   'cowboys-jersey': cowboysJersey,
@@ -257,11 +285,19 @@ const Images = {
   'cryptoad-4502': cryptoad4502,
   'cryptoad-large': cryptoadlarge,
   'cryptoad-small': cryptoadsmall,
+  'dex-gas': dexGas,
+  'dex-no-token-balances': dexNoTokenBalances,
   'dex-onboarding-slide-funds': dexOnboardingSlideFunds,
   'dex-onboarding-slide-not-eligible': dexOnboardingSlideNotEligible,
   'dex-onboarding-slide-swap': dexOnboardingSlideSwap,
   'dex-onboarding-slide-welcome': dexOnboardingSlideWelcome,
+  'dex-percentage': dexPercentage,
+  'dex-swap-confirming': dexSwapConfirming,
+  'dex-swap-error': dexSwapError,
+  'dex-token-allowance': dexTokenAllowance,
+  'dex-verification-check': dexVerificationCheck,
   'earn-activity-empty': earnActivityEmpty,
+  'earn-clock': earnClock,
   'earn-empty': earnEmpty,
   'email-error': emailError,
   'email-success': emailSuccess,
@@ -284,7 +320,10 @@ const Images = {
   'google-play-badge': googlePlayBadge,
   'grey-verified': greyVerified,
   identification,
+  'identification-circle': identificationCircle,
+  'identification-circle-black': identificationCircleBlack,
   'identity-verification': identityVerification,
+  'identity-verification-pending': identityVerificationPending,
   instagram,
   interest,
   'intro-card': introCard,
@@ -293,6 +332,7 @@ const Images = {
   'lock-open': lockOpen,
   'logo-loader': logoLoader,
   'mastercard-logo': mastercardLogo,
+  mobile,
   money,
   nft,
   'nft-collections': nftcollections,
@@ -303,6 +343,8 @@ const Images = {
   'nft-nouns': nftnouns,
   'nft-paint-hyperlink': nftpainthyperlink,
   'nft-purchase': nftPurchase,
+  'no-balance': noBalance,
+  offline,
   'onboarding-active-rewards': onboardingActiveRewards,
   'onboarding-earn': onboardingEarn,
   'onboarding-passive-rewards': onboardingPassiveRewards,
@@ -333,8 +375,12 @@ const Images = {
   'send-no-funds': sendNoFundsPromo,
   'sesocio-to-blockchain-logo': ssBcLogo,
   smartphone,
+  'sofi-blockchain-migration': sofiBlockchainMigration,
+  'sofi-finish-migration': sofiFinishMigration,
+  'sofi-migration-pending': sofiMigrationPending,
   'source-of-wealth': sourceOfWealth,
   'subtract-check-circle': subtractCheckCircle,
+  'super-app-icon': superAppIcon,
   swap,
   'swap-blue': swapBlue,
   'swap-success': swapSuccess,

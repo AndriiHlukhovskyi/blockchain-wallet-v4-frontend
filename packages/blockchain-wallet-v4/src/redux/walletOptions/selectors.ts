@@ -9,6 +9,7 @@ import { WalletOptionsType } from './types'
 // general
 export const getOptions = (state: RootState) => state.walletOptions.details
 export const getDomains = (state) => getOptions(state).map((x) => x.domains)
+export const getDomainApi = (state) => getOptions(state).map((x) => x.domains.api)
 export const getWebOptions = (state) =>
   getOptions(state).map(path(['platforms', 'web'])) as RemoteDataType<
     string,
@@ -29,6 +30,10 @@ export const getXlmExchangeAddresses = () => Remote.of([])
 export const getVeriffDomain = (state) => getDomains(state).map(prop('veriff'))
 export const getSiftKey = (state) => getWebOptions(state).map(path(['sift', 'apiKey']))
 export const getWalletHelperDomain = (state) => getDomains(state).map(prop('walletHelper'))
+
+// BAKKT
+export const getBakktRedirectUSStates = (state: RootState) =>
+  getOptions(state).map((e) => e.bakktRedirectUSStates)
 
 //
 // FEATURE FLAG SELECTORS
@@ -159,9 +164,17 @@ export const getSecureEmailSmsUpdate = (state: RootState) =>
 export const getDexProductEnabled = (state: RootState) =>
   getWebOptions(state).map(path(['featureFlags', 'dex']))
 
+// dex feature flag
+export const getMnemonicRecoveryEnabled = (state: RootState) =>
+  getWebOptions(state).map(path(['featureFlags', 'isMnemonicRecoveryEnabled']))
+
 // staking feature flag
 export const getIsStakingEnabled = (state: RootState) =>
   getWebOptions(state).map(path(['featureFlags', 'isStakingEnabled']))
+
+// Super app link out feature flag
+export const getIsSuperAppEnabled = (state: RootState) =>
+  getWebOptions(state).map(path(['featureFlags', 'isSuperAppEnabled']))
 
 // crates nabu user at login if credentials aren't in metadata
 export const createNabuUserAtLogin = (state: RootState) =>
@@ -206,3 +219,26 @@ export const getShowEarnAvailableAssets = (state: RootState) =>
 // show prove flow
 export const getShowProveFlow = (state: RootState) =>
   getWebOptions(state).map(path(['featureFlags', 'showProveFlow']))
+
+// which deposit address to use for swap
+export const getUseAgentHotWalletAddress = (state: RootState) =>
+  getWebOptions(state).map(path(['featureFlags', 'useAgentHotWalletAddress']))
+
+// which deposit address to use for non custodial sell
+export const getUseAgentHotWalletAddressForSell = (state: RootState) =>
+  getWebOptions(state).map(path(['featureFlags', 'useAgentHotWalletAddressForSell']))
+
+// imported address sweep
+export const getImportedAddressSweep = (state: RootState) =>
+  getWebOptions(state).map(path(['featureFlags', 'showImportedAddressSweep']))
+
+// prove
+export const getProveEnabled = (state: RootState) =>
+  getWebOptions(state).map(path(['featureFlags', 'proveEnabled']))
+
+export const getFiatEntityRemediationAlert = (state: RootState) =>
+  getWebOptions(state).map(path(['featureFlags', 'showFiatEntityRemediationAlert']))
+// sofi
+// sofi associate before email verification
+export const getAssociateSofiBeforeEmailVerification = (state: RootState) =>
+  getWebOptions(state).map(path(['featureFlags', 'sofiAssociateUserBeforeEmailVerification']))

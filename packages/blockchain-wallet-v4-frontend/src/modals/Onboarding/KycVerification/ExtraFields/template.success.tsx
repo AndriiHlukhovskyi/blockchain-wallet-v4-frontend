@@ -1,9 +1,10 @@
 import React, { useCallback } from 'react'
 import { FormattedMessage } from 'react-intl'
+import { connect } from 'react-redux'
 import { Field, InjectedFormProps, reduxForm } from 'redux-form'
 import styled from 'styled-components'
 
-import { NodeItem, NodeItemTypes, NodeTextType } from '@core/types'
+import { HeaderType, NodeItem, NodeItemTypes, NodeTextType } from '@core/types'
 import { BlockchainLoader, Button, HeartbeatLoader, Icon, Text } from 'blockchain-info-components'
 import { FlyoutWrapper } from 'components/Flyout'
 import CheckBox from 'components/Form/CheckBox'
@@ -13,7 +14,6 @@ import FormItem from 'components/Form/FormItem'
 import SelectBox from 'components/Form/SelectBox'
 import TextBox from 'components/Form/TextBox'
 import { model } from 'data'
-import { getFormattedMessageComponent } from 'services/FormattedMessage/getFormattedMessageComponent'
 import { required, validFormat } from 'services/forms'
 
 import { Props as OwnProps, SuccessStateType } from '.'
@@ -177,9 +177,11 @@ const Success: React.FC<InjectedFormProps<{}, Props> & Props> = (props) => {
         const multipleItems = multipleSelection.map(
           (node) => node.children && node.children.some((item) => item.checked)
         )
+
         return multipleItems.every((item) => item)
       }
     }
+
     return true
   }
 
@@ -262,11 +264,11 @@ const Success: React.FC<InjectedFormProps<{}, Props> & Props> = (props) => {
 
   const renderCheckBoxBasedQuestion = (node: NodeItem) => {
     const nodeTranslation = {
-      instructions: getFormattedMessageComponent(`${node.id}_instructions`),
-      title: getFormattedMessageComponent(node.id)
+      instructions: node.instructions ?? '',
+      title: node.text
     }
     return (
-      <FormGroup>
+      <FormGroup key={node.id}>
         <QuestionTitle>{nodeTranslation.title}</QuestionTitle>
 
         <QuestionDescription>{nodeTranslation.instructions}</QuestionDescription>
@@ -278,7 +280,7 @@ const Success: React.FC<InjectedFormProps<{}, Props> & Props> = (props) => {
                 <FormItem>
                   <CheckBoxContainer>
                     <CenterField>
-                      <CheckBoxText>{getFormattedMessageComponent(child.id)}</CheckBoxText>
+                      <CheckBoxText>{child.text}</CheckBoxText>
                     </CenterField>
                     <CenterField>
                       <Field
@@ -303,15 +305,15 @@ const Success: React.FC<InjectedFormProps<{}, Props> & Props> = (props) => {
   const RenderSingleSelectionQuestion = (node: NodeItem) => {
     const formValue = props?.formValues ? props?.formValues[node.id] : null
     const nodeTranslation = {
-      instructions: getFormattedMessageComponent(`${node.id}_instructions`),
-      title: getFormattedMessageComponent(node.id)
+      instructions: node.instructions,
+      title: node.text
     }
     // BE will provide id to contains OPTIONAL in any children
     const isOptional = node.children && node.children.some((item) => item.id.includes('UNDEFINED'))
 
     return (
       <>
-        <FormGroup>
+        <FormGroup key={node.id}>
           <QuestionTitle>{nodeTranslation.title}</QuestionTitle>
 
           <QuestionDescription>{nodeTranslation.instructions}</QuestionDescription>
@@ -323,7 +325,7 @@ const Success: React.FC<InjectedFormProps<{}, Props> & Props> = (props) => {
                   <LabelItem htmlFor={child.id} key={child.id}>
                     <CheckBoxContainer>
                       <CenterField>
-                        <CheckBoxText>{getFormattedMessageComponent(child.id)}</CheckBoxText>
+                        <CheckBoxText>{child.text}</CheckBoxText>
                       </CenterField>
                       <CenterField>
                         <Field
@@ -358,7 +360,7 @@ const Success: React.FC<InjectedFormProps<{}, Props> & Props> = (props) => {
                       >
                         <Label htmlFor={item.id}>
                           <Text weight={500} size='14px' color='grey900'>
-                            {getFormattedMessageComponent(item.id)}
+                            {item.text}
                           </Text>
                         </Label>
                         <Field
@@ -385,13 +387,13 @@ const Success: React.FC<InjectedFormProps<{}, Props> & Props> = (props) => {
     const displayInstructions = node.instructions && !!node.instructions.length
 
     const nodeTranslation = {
-      field: getFormattedMessageComponent(`${node.id}hint`),
-      instructions: getFormattedMessageComponent(`${node.id}_instructions`),
-      title: getFormattedMessageComponent(node.id)
+      field: node.hint ?? '',
+      instructions: node.instructions ?? '',
+      title: node.text
     }
 
     return (
-      <FormGroup>
+      <FormGroup key={node.id}>
         <QuestionTitle>{nodeTranslation.title}</QuestionTitle>
 
         {displayInstructions && (
@@ -414,27 +416,18 @@ const Success: React.FC<InjectedFormProps<{}, Props> & Props> = (props) => {
     )
   }
 
-  const RenderHeader = (header) => {
-    const headerTranslation = {
-      description: getFormattedMessageComponent('header.description'),
-      title: getFormattedMessageComponent('header.title')
-    }
-
-    return (
-      <TopHeader color='grey800' size='20px' weight={600}>
-        <Icon
-          name='user'
-          size='27px'
-          color='blue600'
-          style={{ marginBottom: '10px', marginRight: '4px' }}
-        />
-        <TopHeaderTitle>{headerTranslation.title}</TopHeaderTitle>
-        {header.description && (
-          <TopHeaderDescription>{headerTranslation.description}</TopHeaderDescription>
-        )}
-      </TopHeader>
-    )
-  }
+  const RenderHeader = (header: HeaderType) => (
+    <TopHeader color='grey800' size='20px' weight={600}>
+      <Icon
+        name='user'
+        size='27px'
+        color='blue600'
+        style={{ marginBottom: '10px', marginRight: '4px' }}
+      />
+      <TopHeaderTitle>{header.title}</TopHeaderTitle>
+      {header.description && <TopHeaderDescription>{header.description}</TopHeaderDescription>}
+    </TopHeader>
+  )
 
   const RenderDropDownBasedQuestion = (node: NodeItem) => {
     const questionElements = GetNodeQuestionElements(node)
@@ -453,15 +446,15 @@ const Success: React.FC<InjectedFormProps<{}, Props> & Props> = (props) => {
     const formValue = props?.formValues ? props?.formValues[node.id] : null
 
     const nodeTranslation = {
-      instructions: getFormattedMessageComponent(`${node.id}_instructions`),
-      title: getFormattedMessageComponent(node.id)
+      instructions: node.instructions ?? '',
+      title: node.text
     }
 
     // BE will provide id to contains OPTIONAL in any children
     const isOptional = node.children && node.children.some((item) => item.id.includes('UNDEFINED'))
 
     return (
-      <FormGroup>
+      <FormGroup key={node.id}>
         <QuestionTitle>
           {nodeTranslation.title !== '' ? nodeTranslation.title : node.text}
         </QuestionTitle>
@@ -603,7 +596,20 @@ const Success: React.FC<InjectedFormProps<{}, Props> & Props> = (props) => {
 
 export type Props = OwnProps & SuccessStateType
 
-export default reduxForm<{}, Props>({
+const ReduxForm = reduxForm<{}, Props>({
   destroyOnUnmount: false,
   form: KYC_EXTRA_QUESTIONS_FORM
 })(Success)
+
+export default connect((_, ownProps: Props) => ({
+  initialValues: ownProps.extraSteps.nodes.reduce((acc, node) => {
+    if (node.type === 'SINGLE_SELECTION') {
+      return {
+        ...acc,
+        [node.id]: node.children?.find((child) => child.checked)?.id
+      }
+    }
+
+    return acc
+  }, {})
+}))(ReduxForm)

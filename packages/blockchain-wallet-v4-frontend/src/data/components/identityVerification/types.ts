@@ -5,7 +5,8 @@ import {
   KycFlowsType,
   NabuAddressType,
   RemoteDataType,
-  RetrieveAddress
+  RetrieveAddress,
+  VerificationStepsType
 } from '@core/types'
 
 export const STEPS = {
@@ -15,7 +16,7 @@ export const STEPS = {
 
 export type EmailSmsStepType = keyof typeof STEPS
 
-// TODO - this is added only for analytics purpose and we should get rid of it
+// TODO - this is added only for analytics purpose, and we should get rid of it
 // it could be replaced with ModalOriginType from data/modals
 export type VerifyIdentityOriginType =
   | 'DashboardPromo'
@@ -33,6 +34,7 @@ export type VerifyIdentityOriginType =
   | 'Interest'
   | 'Withdraw'
   | 'DebitCard'
+  | 'Request'
   | 'UpgradeNowSilver'
 
 export enum StepsEnum {
@@ -102,6 +104,7 @@ export interface IdentityVerificationState {
   userAddresses: RemoteDataType<string, FindAddressResponse>
   userRetrieveAddress: RemoteDataType<string, RetrieveAddress>
   verificationStep: StepsType | null
+  verificationSteps: RemoteDataType<string, VerificationStepsType | ''>
 }
 
 export type InfoAndResidentialFormValuesType = {

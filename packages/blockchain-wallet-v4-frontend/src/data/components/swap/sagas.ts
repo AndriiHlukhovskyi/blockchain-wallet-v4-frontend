@@ -1,11 +1,12 @@
 import BigNumber from 'bignumber.js'
 import { differenceInMilliseconds } from 'date-fns'
 import { call, delay, put, select, take } from 'redux-saga/effects'
+import { call as typedCall } from 'typed-redux-saga'
 
 import { Exchange } from '@core'
 import { APIType } from '@core/network/api'
 import Remote from '@core/remote'
-import { PaymentType, Product, SwapOrderDirection } from '@core/types'
+import { ExtraKYCContext, PaymentType, Product, SwapOrderDirection } from '@core/types'
 import { Coin, errorHandler } from '@core/utils'
 import { actions, selectors } from 'data'
 import { SWAP_ACCOUNTS_SELECTOR } from 'data/coins/model/swap'
@@ -15,9 +16,11 @@ import {
   CustodialSanctionsEnum,
   ModalName,
   NabuProducts,
-  ProductEligibilityForUser
+  ProductEligibilityForUser,
+  VerifyIdentityOriginType
 } from 'data/types'
 import { isNabuError } from 'services/errors'
+import { getExtraKYCCompletedStatus } from 'services/sagas/extraKYC'
 
 import { actions as custodialActions } from '../../custodial/slice'
 import profileSagas from '../../modules/profile/sagas'
@@ -154,17 +157,23 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas; network
       const paymentAmount = generateProvisionalPaymentAmount(coin, amount)
       payment = yield payment.amount(paymentAmount)
 
-      // TODO, add isMemoBased check
       const paymentAccount: ReturnType<typeof api.getPaymentAccount> = yield call(
         api.getPaymentAccount,
         coin
       )
 
-      const addressForPAyment = paymentAccount.agent?.address
+      const addressForPayment = paymentAccount.agent?.address
         ? paymentAccount.agent.address
         : paymentAccount.address
 
-      return (yield payment.chain().to(addressForPAyment, 'ADDRESS').build().done()).value()
+      return (
+        (yield payment
+          .chain()
+          // TODO, add isMemoBased check
+          .to(addressForPayment.split(':')[0], 'ADDRESS')
+          .build()
+          .done()).value()
+      )
     } catch (e) {
       // eslint-disable-next-line
       console.log(e)
@@ -224,9 +233,24 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas; network
       const payment = paymentGetOrElse(BASE.coin, paymentR)
       if (onChain) {
         try {
-          const hotWalletAddress = selectors.core.walletOptions
+          const useAgentHotWalletAddress = selectors.core.walletOptions
+            .getUseAgentHotWalletAddress(yield select())
+            .getOrElse(true)
+
+          const hotWalletAddressWalletOptions = selectors.core.walletOptions
             .getHotWalletAddresses(yield select(), Product.SWAP)
             .getOrElse(null)
+
+          const paymentAccount: ReturnType<typeof api.getPaymentAccount> = yield call(
+            api.getPaymentAccount,
+            BASE.coin
+          )
+
+          // we are using a wallet address for the hot wallet from the API
+          const hotWalletAddress = useAgentHotWalletAddress
+            ? paymentAccount.agent.address
+            : hotWalletAddressWalletOptions
+
           if (typeof hotWalletAddress !== 'string') {
             console.error(
               'Unable to retreive hotwallet address; falling back to deposit and sweep.'
@@ -521,13 +545,17 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas; network
 
   const showModal = function* ({ payload }: ReturnType<typeof A.showModal>) {
     const { baseCurrency, counterCurrency, origin } = payload
-    yield put(
-      actions.modals.showModal(ModalName.SWAP_MODAL, {
-        baseCurrency,
-        counterCurrency,
-        origin
-      })
-    )
+    // Verify identity before deposit if TIER 2
+    const completedKYC = yield call(getExtraKYCCompletedStatus, {
+      api,
+      context: ExtraKYCContext.TRADING,
+      origin: 'Swap' as VerifyIdentityOriginType
+    })
+
+    // If KYC was closed before answering, return
+    if (!completedKYC) {
+      return
+    }
 
     const latestPendingOrder = S.getLatestPendingSwapTrade(yield select())
 
@@ -556,8 +584,6 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas; network
             origin: 'BuySellInit'
           })
         )
-        // close swap Modal
-        yield put(actions.modals.closeModal(ModalName.SWAP_MODAL))
         return
       }
     }
@@ -571,8 +597,18 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas; network
             origin: 'BuySellInit'
           })
         )
-        yield put(actions.modals.closeModal(ModalName.SWAP_MODAL))
         return
+      }
+
+      if (products.swap.reasonNotEligible.reason === 'NOT_ELIGIBLE') {
+        const steps = yield* typedCall(api.fetchVerificationSteps)
+        if (steps !== '' && steps.items[steps.items.length - 1].status === 'DISABLED') {
+          yield put(
+            actions.modals.showModal(ModalName.COMPLETE_USER_PROFILE, { origin: 'BuySellInit' })
+          )
+
+          return
+        }
       }
 
       const message =
@@ -587,9 +623,16 @@ export default ({ api, coreSagas, networks }: { api: APIType; coreSagas; network
           sanctionsType
         })
       )
-      yield put(actions.modals.closeModal(ModalName.SWAP_MODAL))
       return
     }
+
+    yield put(
+      actions.modals.showModal(ModalName.SWAP_MODAL, {
+        baseCurrency,
+        counterCurrency,
+        origin
+      })
+    )
 
     if (latestPendingOrder) {
       yield put(
